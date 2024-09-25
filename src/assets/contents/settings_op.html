@@ -1,0 +1,16 @@
+<div class="mdui-typo">
+	<h1>设置</h1><br>
+	<a href="/settings/info">个人设置</a> | <a href="/settings/profile">隐私设置</a> | <a href="/settings/security">安全设置</a> | 权限设置 | <a href="/settings/blog">博客设置</a><br>
+</div>
+
+<label class="mdui-textfield-label">管理员权限状态</label>
+<% if (isAdmin) { %>
+	<div class="mdui-typo" style="color: #0f0;">您当前是管理员！</div>
+<% } else { %>
+	<div class="mdui-typo" style="color: #f00;">您当前不是管理员！</div>
+<% } %>
+
+<br><br>
+
+<label class="mdui-textfield-label">用户权限</label>
+<pre class="remove-style"><code><%- highlightjs.highlight(permission_json, {language: 'json'}).value %></code></pre>

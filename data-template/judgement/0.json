@@ -1,0 +1,14 @@
+{
+	"data": [
+		{
+			"key": "login",
+			"value": false
+		}
+	],
+	"count": 1,
+	"reason": "服务器官方账号禁止个人以常规手段登录",
+	"token": 0,
+	"original": 1,
+	"operator": 1,
+	"uid": 2
+}

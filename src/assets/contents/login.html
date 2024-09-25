@@ -1,0 +1,35 @@
+<script>
+	$(document).ready(() => {
+		$("#login").click(() => {
+			if ($("#username").val() == "" || $("#password").val() == "") {
+				mdui.alert("用户名、密码不得为空！", "错误");
+				return;
+			}
+			$.post("/userapi", {
+				user: $("#username").val(),
+				passwd: $("#password").val(),
+				method: "login"
+			}, (data, status) => {
+				if (data.error != undefined) {
+					$('#error').text(data.error);
+				}
+				else window.location.pathname = "/";
+			});
+		});
+	});
+</script>
+<div class="mdui-typo">
+	<h1>登录</h1>
+</div>
+<div class="mdui-textfield mdui-textfield-floating-label">
+	<label class="mdui-textfield-label" for="username">用户名</label>
+	<input class="mdui-textfield-input" type="text" id="username"/>
+</div>
+<div class="mdui-textfield mdui-textfield-floating-label">
+	<label class="mdui-textfield-label" for="password">密码</label>
+	<input class="mdui-textfield-input" type="password" id="password"/>
+</div>
+<div class="mdui-typo" style="color: #f00;" id="error"></div>
+<a id="login" class="mdui-btn mdui-btn-raised mdui-color-theme-200 mdui-ripple mdui-ripple-white">登录</a><br>
+
+<div class="mdui-typo"><a href="/regist">用户注册</a></div>

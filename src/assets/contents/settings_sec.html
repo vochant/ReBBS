@@ -1,0 +1,80 @@
+<script>
+	$(document).ready(() => {
+		function send_api(str, val, errid, pwd) {
+			$.post("/settings/security_api", {
+				id: str,
+				value: val,
+				password: pwd
+			}, (data, status) => {
+				if (data.error != undefined) {
+					$(errid).text(data.error);
+					return false;
+				} else {
+					mdui.snackbar("更新成功！");
+					return true;
+				}
+			});
+		}
+		$("#updUsername").click(() => {
+			var passwd = $("#password").val();
+			if (passwd == "") {
+				mdui.alert("请填写密码！");
+				return;
+			}
+			var val = $("#name").val();
+			if (val == "") {
+				mdui.alert("不能更新空串！");
+				return;
+			}send_api("userName", val, "#err1", passwd);
+		});
+		$("#updPassword").click(() => {
+			var passwd = $("#password").val();
+			if (passwd == "") {
+				mdui.alert("请填写密码！");
+				return;
+			}
+			var val = $("#password1").val();
+			if (val == "") {
+				mdui.alert("不能更新空串！");
+				return;
+			}
+			if (val != $("#password2").val()) {
+				mdui.alert("两次输入的内容不相同！");
+				return;
+			}
+			send_api("password", val, "#err2", passwd);
+		});
+	});
+</script>
+
+<div class="mdui-typo">
+	<h1>设置</h1><br>
+	<a href="/settings/info">个人设置</a> | <a href="/settings/profile">隐私设置</a> | 安全设置 | <a href="/settings/permission">权限设置</a> | <a href="/settings/blog">博客设置</a><br>
+</div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label" for="password">原密码（必须填写）</label>
+	<input class="mdui-textfield-input" type="password" id="password" required/>
+	<div class="mdui-textfield-error">此项必须填写</div>
+</div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label">用户名</label>
+	<input class="mdui-textfield-input" type="text" id="name" placeholder="John Alfnov"/>
+</div>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="updUsername">更换用户名</a>
+<div class="mdui-typo" style="color: #f00;" id="err1"></div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label" for="password1">新密码</label>
+	<input class="mdui-textfield-input" type="password" id="password1"/>
+</div>
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label" for="password2">重复新密码</label>
+	<input class="mdui-textfield-input" type="password" id="password2"/>
+</div>
+
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="updPassword">更新密码</a>
+<div class="mdui-typo" style="color: #f00;" id="err2"></div>
+<br>
+<a href="javascript:mdui.alert('出于安全考虑，暂不提供自动注销功能，请联系站长或管理员进行手动注销！', '提示')" class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-red">注销用户</a>

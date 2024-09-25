@@ -1,0 +1,165 @@
+<script>
+	window.token = -1;
+	function startJudgement() {
+		if ($("#uid").val() == "") {
+			$("#err").text("未选择目标用户！");
+			return;
+		}
+		if (!/^[1-9][0-9]{0,}$/.test($("#uid").val())) {
+			$("#err").text("UID 无效！");
+			return;
+		}
+		if (window.token != -1) {
+			$("#err").text("当前存在正在使用的 Token！");
+			return;
+		}
+		$.post("/admin/api0", {uid: $("#uid").val()}, (data, status) => {
+			if (data.error == undefined) {
+				window.token = Number(data.token);
+				window.obj = {count: 0, token: window.token};
+				mdui.snackbar("申请成功！");
+				$("#a")[0].setAttribute("disabled", "true");
+				$("#b").removeAttr("disabled");
+				$("#c").removeAttr("disabled");
+				$("#d").removeAttr("disabled");
+				$("#e").removeAttr("disabled");
+			}
+			else {
+				$("#err").text(data.error);
+			}
+		});
+	}
+	function addPermission() {
+		var pid = $("#permid").val();
+		if (!["visit", "login", "comment", "messager", "post", "share", "upload"].includes(pid)) {
+			$("#err").text("Permission ID 无效！");
+			return;
+		}
+		window.obj[`k${window.obj.count}`] = pid;
+		window.obj[`v${window.obj.count}`] = true;
+		window.obj.count++;
+		mdui.snackbar("操作成功完成！");
+		var elem = document.createElement("li");
+		elem.innerHTML = `授予 ${pid} 权限`;
+		$("#record")[0].appendChild(elem);
+	}
+	function removePermission() {
+		var pid = $("#permid").val();
+		if (!["visit", "login", "comment", "messager", "post", "share", "upload"].includes(pid)) {
+			$("#err").text("Permission ID 无效！");
+			return;
+		}
+		window.obj[`k${window.obj.count}`] = pid;
+		window.obj[`v${window.obj.count}`] = false;
+		window.obj.count++;
+		mdui.snackbar("操作成功完成！");
+		var elem = document.createElement("li");
+		elem.innerHTML = `移除 ${pid} 权限`;
+		$("#record")[0].appendChild(elem);
+	}
+	function endJudgement() {
+		if (window.userconfirm) {
+			$.post("/admin/api1", {count: 0, token: window.token}, (data, status) => {
+				if (data.error != undefined) {
+					$("#err").text(data.error);
+				} else {
+					mdui.snackbar("取消成功");
+					window.userconfirm = false;
+					window.token = -1;
+					$("#a").removeAttr("disabled");
+					$("#b")[0].setAttribute("disabled", "true");
+					$("#c")[0].setAttribute("disabled", "true");
+					$("#d")[0].setAttribute("disabled", "true");
+					$("#e")[0].setAttribute("disabled", "true");
+					$("#record").html("");
+				}
+			});
+		} else {
+			$("#err").text("请再次点击以确认！");
+			window.userconfirm = true;
+		}
+	}
+	function completeJudgement() {
+		if (window.userconfirm1) {
+			window.obj.reason = $("#rsn").val();
+			$.post("/admin/api1", window.obj, (data, status) => {
+				if (data.error != undefined) {
+					$("#err").text(data.error);
+				} else {
+					mdui.snackbar("放逐成功");
+					window.userconfirm1 = false;
+					window.token = -1;
+					$("#a").removeAttr("disabled");
+					$("#b")[0].setAttribute("disabled", "true");
+					$("#c")[0].setAttribute("disabled", "true");
+					$("#d")[0].setAttribute("disabled", "true");
+					$("#e")[0].setAttribute("disabled", "true");
+					$("#record").html("");
+				}
+			});
+		} else {
+			$("#err").text("请再次点击以确认！");
+			window.userconfirm1 = true;
+		}
+	}
+	$(document).ready(() => {
+		$("#replace").click(() => {
+			if ($("#uid").val() == "") {
+				$("#err2").text("未选择目标用户！");
+				return;
+			}
+			if (!/^[1-9][0-9]{0,}$/.test($("#uid").val())) {
+				$("#err2").text("UID 无效！");
+				return;
+			}
+			$.post("/admin/custom_login", {uid: Number($("#uid").val())}, (data, status) => {
+				if (data.error != undefined) {
+					$("#err2").text(data.error);
+				} else {
+					window.location.reload();
+				}
+			});
+		});
+	});
+</script>
+
+<div class="mdui-typo">
+	<h1>后台管理</h1>
+</div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label" for="uid">UID</label>
+	<input class="mdui-textfield-input" type="text" id="uid"/>
+</div>
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label" for="permid">Permission ID</label>
+	<input class="mdui-textfield-input" type="text" id="permid"/>
+</div>
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label" for="rsn">Reason</label>
+	<input class="mdui-textfield-input" type="text" id="rsn"/>
+</div>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" href="javascript:startJudgement();" id="a">开始放逐</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" href="javascript:addPermission();" id="b" disabled="true">授予权限</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" href="javascript:removePermission();" id="c" disabled="true">移除权限</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" href="javascript:endJudgement();" id="d" disabled="true">取消放逐</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" href="javascript:completeJudgement();" id="e" disabled="true">完成放逐</a><br>
+<div class="mdui-typo">
+	<p id="err" style="color: #f00;"></p>
+	<h3 class="article-title">权限列表：</h3>
+	<ul>
+		<li>visit - 访问主站</li>
+		<li>login - 鉴权登录</li>
+		<li>comment - 发表评论</li>
+		<li>messager - 使用私信</li>
+		<li>post - 发布内容</li>
+		<li>share - 上传动态</li>
+		<li>upload - 使用上传</li>
+	</ul>
+	<h3 class="article-title">放逐记录：</h3>
+	<ul id="record"></ul>
+</div>
+
+<label class="mdui-textfield-label">查看其他用户视角</label>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="replace">切换身份</a>
+<div id="err2" class="mdui-typo" style="color: #f00;"></div>

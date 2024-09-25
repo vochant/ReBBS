@@ -1,0 +1,136 @@
+<% if (req.loginStat != -1) { %>
+	<script>
+		window.subscribed = <%= subscribed %>;
+		window.be_subsc = 
+		window.banned = <%= banned %>;
+		window.in_count = <%= in_count %>;
+		function change_subscribe(uid) {
+			$.post("/userapi/subscribe", {
+				uid,
+				value: !window.subscribed
+			}, (data, status) => {
+				if (data.error != undefined) {
+					mdui.snackbar(`错误：${data.error}`);
+				} else {
+					mdui.snackbar("更新成功！");
+					window.subscribed = !window.subscribed;
+					if (window.subscribed) {
+						$("#subsc")[0].innerHTML = "<% if (be_subsc) { %>已互关<% } else { %>已关注<% } %>";
+						window.in_count++;
+					} else {
+						$("#subsc")[0].innerHTML = "关注";
+						window.in_count--;
+					}
+					$("#fans")[0].innerHTML = "<strong>粉丝</strong> " + window.in_count;
+				}
+			});
+		}
+		function change_subsc2(uid) {
+			$.post("/userapi/subscribe", {
+				uid,
+				value: $(`#u${uid}`)[0].getAttribute("subsct") == "idno"
+			}, (data, status) => {
+				if (data.error != undefined) {
+					mdui.snackbar(`错误：${data.error}`);
+				} else {
+					mdui.snackbar("更新成功！");
+					var prev = Number($(`#text${uid}`)[0].getAttribute("num"));
+					$(`#u${uid}`)[0].setAttribute("subsct", ($(`#u${uid}`)[0].getAttribute("subsct") == "idno") ? "idyes" : "idno");
+					if ($(`#u${uid}`)[0].getAttribute("subsct") == "idyes") {
+						$(`#u${uid}`)[0].innerHTML = $(`#u${uid}`)[0].getAttribute("rsubsct") == "idyes" ? "已互关" : "已关注";
+						prev++;
+					} else {
+						$(`#u${uid}`)[0].innerHTML = "关注";
+						prev--;
+					}
+					$(`#text${uid}`)[0].setAttribute("num", prev.toString());
+					$(`#text${uid}`)[0].innerHTML = `<strong>粉丝 </strong> ${prev}`;
+				}
+			});
+		}
+		function change_ban(uid) {
+			$.post("/userapi/ban", {
+				uid,
+				value: !window.banned
+			}, (data, status) => {
+				if (data.error != undefined) {
+					mdui.snackbar(`错误：${data.error}`);
+				} else {
+					mdui.snackbar("更新成功！");
+					window.banned = !window.banned;
+					if (window.banned) {
+						$("ban")[0].innerHTML = "取消拉黑";
+					} else {
+						$("ban")[0].innerHTML = "拉黑";
+					}
+				}
+			});
+		}
+	</script>
+<% } else { %>
+	<script>
+		function change_subsc2(opt) {
+			mdui.snackbar("请先登录！");
+		}
+	</script>
+<% } %>
+	<style>
+		.my-card-text {
+			display: block;
+			margin-left: 65px;
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+		.header-media {
+			max-height: 250px;
+		}
+	</style>
+
+<div class="mdui-card">
+	<div class="mdui-card-media">
+		<img src="/file/userbg.jpg" class="header-media">
+		<div class="mdui-card-media-covered">
+			<div class="mdui-card-primary">
+				<img height="60px" style="width:60px!important;position:absolute;" class="mdui-img-circle mdui-img" src="/file/usericon/<%= uid %>.png">
+				<div class="mdui-card-primary-title my-card-text"><%= username %></div>
+				<div class="mdui-card-primary-subtitle my-card-text">
+					<%= userdesc %>
+					<br>
+					<a href="/user/<%= uid %>/subscribes" style="text-decoration:none;color:white;"><strong>关注</strong> <%= out_count %></a>
+					<a href="/user/<%= uid %>/fans" style="text-decoration:none;color:white;" id="fans"><strong>粉丝</strong> <%= in_count %></a>
+				</div>
+			</div>
+			<div class="mdui-card-actions">
+				<% if (uid != req.loginStat && req.loginStat != -1) { %>
+					<a class="mdui-btn mdui-ripple mdui-ripple-white" id="subsc" href="javascript:change_subscribe(<%= uid %>);">
+						<% if (subscribed) { %>
+							<% if (be_subsc) { %>
+								已互关
+							<% } else { %>
+								已关注
+							<% } %>
+						<% } else { %>
+							关注
+						<% } %></a>
+					<a class="mdui-btn mdui-ripple mdui-ripple-white" href="/message?to=<%= uid %>">私信</a>
+					<a class="mdui-btn mdui-ripple mdui-ripple-white" id="ban" href="javascript:change_ban(<%= uid %>)"><% if (banned) { %>取消拉黑<% } else { %>拉黑<% } %></a>
+				<% } else if (req.loginStat != -1) { %>
+					<a class="mdui-btn mdui-ripple mdui-ripple-white" href="/settings/">设置</a>
+				<% } %>
+				<a class="mdui-btn mdui-ripple mdui-ripple-white" href="/blog/<%= uid %>">个人博客</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="mdui-tab">
+	<a href="/user/<%= uid %>#intro" class="mdui-ripple">介绍</a>
+	<a href="/user/<%= uid %>#posts" class="mdui-ripple">内容</a>
+	<a href="/user/<%= uid %>#share" class="mdui-ripple">动态</a>
+	<% if (group_public || uid == req.loginStat) { %>
+		<a href="/user/<%= uid %>#group" class="mdui-ripple">社群</a>
+	<% } %>
+</div>
+
+<%- contents %>

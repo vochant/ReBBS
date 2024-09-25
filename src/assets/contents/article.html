@@ -1,0 +1,157 @@
+<link rel="stylesheet" href="/file/markdown-palettes.css">
+<script src="/file/markdown-palettes.js"></script>
+
+<% if (req.loginStat != -1 && req.loginStat != uid) { %>
+	<script>
+		window.subscribed = <%= subscribed %>;
+		window.in_count = <%= in_count %>;
+		function change_subscribe(uid) {
+			$.post("/userapi/subscribe", {
+				uid,
+				value: !window.subscribed
+			}, (data, status) => {
+				if (data.error != undefined) {
+					mdui.snackbar(`错误：${data.error}`);
+				} else {
+					mdui.snackbar("更新成功！");
+					window.subscribed = !window.subscribed;
+					if (window.subscribed) {
+						$("#subsc")[0].innerHTML = "<% if (be_subsc) { %>已互关<% } else { %>已关注<% } %>";
+						window.in_count++;
+					} else {
+						$("#subsc")[0].innerHTML = "关注";
+						window.in_count--;
+					}
+					$("#fans")[0].innerHTML = "<strong>粉丝</strong> " + window.in_count;
+				}
+			});
+		}
+	</script>
+<% } %>
+<script>
+	function tryLoadMore() {
+		$("#loadmore")[0].remove();
+		window.scrollBusy = false;
+		var x = document.createElement("div");
+		var obj;
+		$.post("/userapi/comment", {method: "getMore", article: <%= aid %>, next: window.nextId}, (data, status) => {
+			if (data.error) {
+				mdui.snackbar("拉取评论失败！");
+			} else {
+				if (data.result == 0) {
+					var o = document.createElement("div");
+					for (var i = nextId; i <= data.end; i++) {
+						var ino = document.createElement("div");
+						var src = `<a><img height="60px" style="width:60px!important;position:absolute;" class="mdui-img-circle mdui-img" src="/file/usericon/${data.comments[i - nextId].sender}.png">`
+								+ `<div class="mdui-card-primary-title my-card-text">${data.comments[i - nextId].name}</div></a>`
+								+ `<div class="mdui-typo">${data.comments[i - nextId].content}</div>`
+								+ `<div class="mdui-typo">`
+								+ `${data.comments[i - nextId].status ? `<a href="javascript:like(${i},false);"` : ''}`
+								+ `<div id="replies-${i}"></div>`
+						window.expendStatus[i] = 0;
+						window.toExpend[i] = data.comments[i - nextId].replies;
+						
+					}
+				}
+			}
+		});
+		x.innerHTML='<a href="javascript:tryLoadMore()" id="loadmore">Load More</a>';
+		$("#comments")[0].appendChild(x);
+	}
+	$(document).ready(() => {
+		window.markdownEditor = new MarkdownPalettes("#editor");
+		window.scrollBusy = false;
+		window.nextId = 0;
+		window.expendStatus = [];
+		window.toExpend = [];
+	});
+	$(document).scroll(() => {
+		if (window.scrollBusy) return;
+		window.scrollBusy = true;
+		var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+		var clientHeight = document.documentElement.clientHeight || document.body.clientHeight;
+		var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+		var footerHeight = $("#footer")[0].scrollHeight;
+		if (scrollTop + clientHeight + footerHeight + 10 >= scrollHeight) {
+			console.log("Downed.");
+			setTimeout(() => {
+				if (!window.scrollBusy) return;
+				window.scrollBusy = false;
+				if (scrollTop + clientHeight + footerHeight + 10 >= scrollHeight) {
+					tryLoadMore();
+				}
+			}, 750);
+		}
+		else scrollBusy = false;
+	})
+</script>
+
+<div class="mdui-typo">
+	<h1><%= title %><br><small><%= postTime %></small></h1>
+</div>
+<div class="mdui-card">
+	<div class="mdui-card-header">
+		<a href="/user/<%= uid %>" style="text-decoration: none;">
+			<img class="mdui-card-header-avatar" src="/file/usericon/<%= uid %>.png"/>
+		</a>
+		<a class="mdui-card-header-title" href="/user/<%= uid %>" style="text-decoration:none;color:black;"><%= username %></a>
+		<div class="mdui-card-header-subtitle">
+			<%= desc %> 
+			<a href="/user/<%= uid %>/subscribes" style="text-decoration:none;color:black;"><strong>关注</strong> <%= out_count %></a>
+			<a href="/user/<%= uid %>/fans" style="text-decoration:none;color:black;" id="fans"><strong>粉丝</strong> <%= in_count %></a>
+		</div>
+	</div>
+	<% if (uid != req.loginStat && req.loginStat != -1) { %>
+		<div class="mdui-card">
+			<div class="mdui-card-actions">
+				<a class="mdui-btn mdui-ripple" id="subsc" href="javascript:change_subscribe(<%= uid %>);">
+					<% if (subscribed) { %>
+						<% if (be_subsc) { %>
+							已互关
+						<% } else { %>
+							已关注
+						<% } %>
+					<% } else { %>
+						关注
+					<% } %>
+				</a>
+			</div>
+		</div>
+		
+	<% } %>
+</div><hr>
+<div>
+	<%- tags %>
+</div>
+<hr>
+<div class="mdui-typo">
+	<%- markdown.render(readFileSync(`./data/res/article/${aid}.md`, "utf8")) %>
+</div>
+<div class="mdui-text-color-pink-300">
+	<a style="user-select:none;">
+		<i class="mdui-icon material-icons">visibility</i>
+	</a>
+	<%= arprof.reads %>
+	<a href="javascript:like()" class="mdui-btn mdui-btn-icon mdui-ripple">
+		<i class="mdui-icon material-icons">thumb_up</i>
+	</a>
+	<a id="lc"><%= arprof.likes.length %></a>
+	<a href="javascript:favorite()" class="mdui-btn mdui-btn-icon mdui-ripple">
+		<i class="mdui-icon material-icons">star</i>
+	</a>
+	<a id="fc"><%= arprof.favorites.length %></a>
+</div>
+
+<div class="mdui-typo">
+	<h3 class="article-title">评论<small><%= /*comment_count*/ 0 %></small></h3>
+</div>
+
+<div id="editor-container" style="height: 400px;">
+	<div id="editor"></div>
+</div><br>
+
+<a class="mdui-btn mdui-btn-raised mdui-color-theme-200 mdui-ripple mdui-ripple-white" id="send">发送评论</a>
+<div class="mdui-container" id="comments">
+	<hr>a<br>a<br>a<br>a<br>a<br><h1>a</h1>a<br>a<br>a<br>a<br>a<br>a<br>
+	<a href="javascript:tryLoadMore()" id="loadmore">Load More</a>
+</div>

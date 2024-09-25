@@ -1,0 +1,285 @@
+<script>
+	function send_api(str, val, errid) {
+		window.retval = false;
+		$.post("/settings/api", {
+			id: str,
+			value: val
+		}, (data, status) => {
+			if (data.error != undefined) {
+				$(errid).text(data.error);
+				return {};
+			} else {
+				mdui.snackbar("更新成功！");
+				if (data.isgp) {
+					if (window.group_pub) {
+						window.group_pub = false;
+						$("#cgp")[0].innerHTML = "切换到对外显示";
+					} else {
+						window.group_pub = true;
+						$("#cgp")[0].innerHTML = "切换到对外隐藏";
+					}
+				}
+				if (data.result) {
+					$("#jobc").text("当前：" + data.result);
+				}
+			}
+		});
+	}
+	$(document).ready(() => {
+		$.get("/settings/data_api", (data, status) => {
+			if (status != "success") {
+				mdui.snackbar("调用获取 API 失败。");
+				return;
+			}
+			$("#email").val(data.mail);
+			$("#name").val(data.realName);
+			$("#no").val(data.phone);
+			$("#date").val(data.born.join('-'));
+			$("#comp").val(data.company);
+			$("#local").val(data.region);
+			$("#jobc").text("当前：" + data.job);
+			var objs = document.getElementsByName("group1");
+			objs[data.gender].setAttribute("checked", true);
+		});
+		$("#upd1").click(() => {
+			var val = $("#email").val()
+			if (val == "") {
+				mdui.alert("不能更新空字符串！", "错误！");
+				return;
+			}
+			send_api("mail", val, "#err1");
+		});
+		$("#remv1").click(() => {
+			if (send_api("mail", "", "#err1")) {
+				$("#email").val("");
+			}
+		});
+		$("#upd2").click(() => {
+			var val = $("#name").val()
+			if (val == "") {
+				mdui.alert("不能更新空字符串！", "错误！");
+				return;
+			}
+			send_api("realName", val, "#err2");
+		});
+		$("#remv2").click(() => {
+			if (send_api("realName", "", "#err2")) {
+				$("#name").val("");
+			}
+		});
+		$("#upd3").click(() => {
+			var val = $("#date").val()
+			if (val == "") {
+				mdui.alert("不能更新空字符串！", "错误！");
+				return;
+			}
+			send_api("born", val, "#err3");
+		});
+		$("#remv3").click(() => {
+			if (send_api("born", "", "#err3")) {
+				$("#date").val("");
+			}
+		});
+		$("#upd4").click(() => {
+			var val = $("#no").val()
+			if (val == "") {
+				mdui.alert("不能更新空字符串！", "错误！");
+				return;
+			}
+			send_api("phone", val, "#err4");
+		});
+		$("#remv4").click(() => {
+			if (send_api("phone", "", "#err4")) {
+				$("#no").val("");
+			}
+		});
+		$("#upd5").click(() => {
+			var val = $("#comp").val()
+			if (val == "") {
+				mdui.alert("不能更新空字符串！", "错误！");
+				return;
+			}
+			send_api("company", val, "#err5");
+		});
+		$("#remv5").click(() => {
+			if (send_api("company", "", "#err5")) {
+				$("#comp").val("");
+			}
+		});
+		$("#upd6").click(() => {
+			var val = $("#local").val()
+			if (val == "") {
+				mdui.alert("不能更新空字符串！", "错误！");
+				return;
+			}
+			send_api("region", val, "#err6");
+		});
+		$("#remv6").click(() => {
+			if (send_api("region", "", "#err6")) {
+				$("#local").val("");
+			}
+		});
+		$("#upd7").click(() => {
+			var idx, objs = document.getElementsByName("group1");
+			for (var i = 0; i < objs.length; i++) {
+				if (objs[i].checked) {
+					idx = i;
+					break;
+				}
+			}
+			send_api("gender", idx, "#err7");
+		});
+		$("#updj").click(() => {
+			var idx = $("#jobsel").get(0).selectedIndex;
+			send_api("job", idx, "#err8");
+		})
+
+		window.group_pub = <%= group_public %>;
+
+		$("#cgp").click(() => {
+			if (window.group_pub) {
+				send_api("group_pub", false, "#errg");
+			} else {
+				send_api("group_pub", true, "#errg");
+			}
+		});
+	});
+</script>
+
+<div class="mdui-typo">
+	<h1>设置</h1><br>
+	<a href="/settings/info">个人设置</a> | 隐私设置 | <a href="/settings/security">安全设置</a> | <a href="/settings/permission">权限设置</a> | <a href="/settings/blog">博客设置</a><br>
+</div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label">Email</label>
+	<input class="mdui-textfield-input" type="email" id="email" placeholder="ccf@ccf.org.cn"/>
+</div>
+
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="upd1">更新此项</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="remv1">重置此项</a>
+<div class="mdui-typo" style="color: #f00;" id="err1"></div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label">真实姓名</label>
+	<input class="mdui-textfield-input" type="text" id="name" placeholder="张三"/>
+</div>
+
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="upd2">更新此项</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="remv2">重置此项</a>
+<div class="mdui-typo" style="color: #f00;" id="err2"></div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label">出生日期</label>
+	<input class="mdui-textfield-input" type="text" id="date" placeholder="1949-10-01"/>
+</div>
+
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="upd3">更新此项</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="remv3">重置此项</a>
+<div class="mdui-typo" style="color: #f00;" id="err3"></div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label">手机号码</label>
+	<input class="mdui-textfield-input" type="tel" id="no" placeholder="16000000000"/>
+</div>
+
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="upd4">更新此项</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="remv4">重置此项</a>
+<div class="mdui-typo" style="color: #f00;" id="err4"></div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label">学校/公司</label>
+	<input class="mdui-textfield-input" type="text" id="comp" placeholder="Minphtis Development"/>
+</div>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="upd5">更新此项</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="remv5">重置此项</a>
+<div class="mdui-typo" style="color: #f00;" id="err5"></div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label">地区</label>
+	<input class="mdui-textfield-input" type="text" id="local" placeholder="浙江省 杭州市"/>
+</div>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="upd6">更新此项</a>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="remv6">重置此项</a>
+<div class="mdui-typo" style="color: #f00;" id="err6"></div>
+
+<label class="mdui-textfield-label">性别</label>
+<form>
+	<label class="mdui-radio">
+		<input type="radio" name="group1"/>
+		<i class="mdui-radio-icon"></i>
+		不显示
+	</label>
+	<label class="mdui-radio">
+		<input type="radio" name="group1"/>
+		<i class="mdui-radio-icon"></i>
+		男
+	</label>
+	<label class="mdui-radio">
+		<input type="radio" name="group1"/>
+		<i class="mdui-radio-icon"></i>
+	  	女
+	</label>
+	<label class="mdui-radio">
+		<input type="radio" name="group1"/>
+		<i class="mdui-radio-icon"></i>
+	  	其他
+	</label>
+</form>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="upd7">更新此项</a>
+<div class="mdui-typo" style="color: #f00;" id="err7"></div>
+
+<br>
+<label class="mdui-textfield-label">职业</label>
+<div class="mdui-typo" style="color: #0f0;" id="jobc">当前：</div>
+<select class="mdui-select" mdui-select="{position: 'bottom'}" name="jobsel" id="jobsel">
+	<option value="0">隐藏</option>
+	<option value="1">计算机</option>
+	<option value="2">制造业</option>
+	<option value="3">科研</option>
+	<option value="4">军警</option>
+	<option value="5">医疗</option>
+	<option value="6">金融</option>
+	<option value="7">商业</option>
+	<option value="8">文化</option>
+	<option value="9">设计</option>
+	<option value="10">艺术</option>
+	<option value="11">教育</option>
+	<option value="12">法律事务</option>
+	<option value="13">行政人员</option>
+	<option value="14">学生</option>
+	<option value="15">小学生</option>
+	<option value="16">初中生</option>
+	<option value="17">高中生</option>
+	<option value="18">大学生</option>
+	<option value="19">宗教事务</option>
+	<option value="20">自媒体</option>
+	<option value="21">服务业</option>
+	<option value="22">老板</option>
+	<option value="23">灵活就业</option>
+	<option value="24">其他</option>
+	<option value="25">BOT</option>
+	<option value="26">OIer</option>
+	<option value="27">MOer</option>
+	<option value="28">方块人</option>
+	<option value="29">玩家</option>
+	<option value="30">人类</option>
+	<option value="31">硅基生物</option>
+	<option value="32">草履虫</option>
+	<option value="33">武装直升机</option>
+	<option value="34">沃尔玛购物袋</option>
+	<option value="35">锟斤拷</option>
+</select>
+
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" name="updj" id="updj">更新此项</a>
+<div class="mdui-typo" style="color: #f00;" id="err8"></div>
+
+<br>
+
+<label class="mdui-textfield-label">群组显示</label>
+<% if (group_public) { %>
+	<a id="cgp" class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200">切换到对外隐藏</a>
+<% } else { %>
+	<a id="cgp" class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200">切换到对外显示</a>
+<% } %>
+<div class="mdui-typo" style="color: #f00;" id="errg"></div>

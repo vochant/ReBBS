@@ -1,0 +1,37 @@
+{
+  "name": "easybbs",
+  "version": "1.0.0",
+  "description": "A simple community system by Mirekintoc Void",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Mirekintoc Void",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-ws": "^5.0.2",
+    "highlight.js": "^11.9.0",
+    "identicon.js": "^2.3.3",
+    "markdown-it": "^13.0.2",
+    "markdown-it-footnote": "^3.0.3",
+    "markdown-it-highlightjs": "^4.0.1",
+    "markdown-it-imsize": "^2.0.1",
+    "markdown-it-katex": "^2.0.3",
+    "markdown-it-mark": "^4.0.0",
+    "markdown-it-merge-cells": "^2.0.0",
+    "markdown-it-spoiler": "^1.1.1",
+    "markdown-it-sub": "^1.0.0",
+    "markdown-it-sup": "^1.0.0",
+    "mdui": "^2.0.2",
+    "moment": "^2.30.1",
+    "socket.io": "^4.7.2",
+    "uuid": "^10.0.0"
+  }
+}

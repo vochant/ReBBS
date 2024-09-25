@@ -1,0 +1,44 @@
+<script>
+	$(document).ready(() => {
+		$("#regist").click(() => {
+			if ($("#name").val() == "" || $("#password").val() == "") {
+				mdui.alert("用户名、密码不得为空！", "错误");
+				return;
+			}
+			if ($("#password").val() != $("#passwd2").val()) {
+				mdui.alert("两次输入的密码不相同！", "错误");
+				return;
+			}
+			$.post("/userapi", {
+				user: $("#name").val(),
+				passwd: $("#password").val(),
+				method: "regist"
+			}, (data, status) => {
+				if (data.error != undefined) {
+					$('#error').text(data.error);
+				}
+				else window.location.pathname = "/settings/profile";
+			});
+		});
+	});
+</script>
+<div class="mdui-typo">
+	<h1>注册</h1>
+</div>
+<div class="mdui-textfield mdui-textfield-floating-label">
+	<label class="mdui-textfield-label" for="name">用户名</label>
+	<input class="mdui-textfield-input" type="text" id="name"/>
+</div>
+<div class="mdui-textfield mdui-textfield-floating-label">
+	<label class="mdui-textfield-label" for="password">密码</label>
+	<input class="mdui-textfield-input" type="password" id="password"/>
+</div>
+<div class="mdui-textfield mdui-textfield-floating-label">
+	<label class="mdui-textfield-label" for="passwd2">重复密码</label>
+	<input class="mdui-textfield-input" type="password" id="passwd2"/>
+</div>
+<div class="mdui-typo" style="color: #f00;" id="error"></div>
+<a id="regist" class="mdui-btn mdui-btn-raised mdui-color-theme-200 mdui-ripple mdui-ripple-white">注册</a><br>
+<div class="mdui-typo"><a href="/login">用户登录</a></div>
+<br>
+<div class="mdui-typo">注册即代表您同意<a href="/eula">《最终用户许可协议》</a></div>

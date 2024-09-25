@@ -1,0 +1,82 @@
+<link rel="stylesheet" href="/file/markdown-palettes.css">
+<script src="/file/markdown-palettes.js"></script>
+
+<script>
+	function selectImg(source) {
+		var file = source.files[0];
+		if (window.FileReader) {
+			var fr = new FileReader();
+			fr.onloadend = function(e) {
+				$("#my_img")[0].src = e.target.result;
+				window.img = e.target.result
+			};
+			fr.readAsDataURL(file);
+		}
+	}
+	function sendImg() {
+		var obj = {};
+		obj.image = window.img;
+		$.post("/userapi/iconset", obj, (data, status) => {
+			if (data.error) {
+				$("#errimg").val(data.error);
+			} else {
+				$("#my_img")[0].src = data.src;
+				mdui.snackbar("更新成功！");
+			}
+		});
+	}
+	$(document).ready(() => {
+		window.markdownEditor = new MarkdownPalettes("#desc");
+		$.get("/settings/data_api", (data, status) => {
+			if (status != "success") {
+				mdui.snackbar("调用获取 API #1 失败。");
+				return;
+			}
+			$("#certify").val(data.certify);
+		});
+		$.get("/userapi/descget0", (data, status) => {
+			if (status != "success") {
+				mdui.snackbar("调用获取 API #2 失败。");
+				return;
+			}
+			markdownEditor.content = data;
+		});
+		$("#upd1").click(() => {
+			$.post("/settings/api", {id: "certify", value: $("#certify").val()}, (data, status) => {
+				if (data.error) $("#err1").val(data.error);
+				else mdui.snackbar("更新成功！");
+			});
+		});
+        $("#upd2").click(() => {
+            $.post("/userapi/descset0", {code: markdownEditor.content}, (data, status) => {
+				if (data.error) mdui.alert(data.error, "错误");
+                else mdui.snackbar("更新成功！");
+            });
+        });
+    });
+</script>
+
+<div class="mdui-typo">
+	<h1>设置</h1><br>
+	个人设置 | <a href="/settings/profile">隐私设置</a> | <a href="/settings/security">安全设置</a> | <a href="/settings/permission">权限设置</a> | <a href="/settings/blog">博客设置</a><br>
+</div>
+
+<div class="mdui-textfield">
+	<label class="mdui-textfield-label">签名</label>
+	<input class="mdui-textfield-input" type="text" id="certify" placeholder="这个人很懒，什么也没有留下。"/>
+</div>
+
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="upd1">更新签名</a>
+<div class="mdui-typo" style="color: #f00;" id="err1"></div>
+<br>
+<label class="mdui-textfield-label">个人简介</label>
+<div id="editor-container" style="height: 400px;">
+	<div id="desc"></div>
+</div><br>
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200" id="upd2">更新简介</a>
+<br><br>
+<label class="mdui-textfield-label">头像</label>
+<img class="mdui-img-fluid mdui-img-circle" src="<%= image.url %>" title="头像" id="my_img" width="120px" height="120px"/>
+<label class="mdui-textfield-label" for="file">文件选择</label>
+<input type="file" name="file" accept="image/png image/jpeg image/jpg" id="file" onchange="selectImg(this);" />
+<a class="mdui-btn mdui-btn-raised mdui-ripple mdui-ripple-white mdui-color-theme-200"  href="javascript:sendImg();">上传</a>

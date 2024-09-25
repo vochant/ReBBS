@@ -1,0 +1,13 @@
+{
+	"title": "OIer Community",
+	"port": 80,
+	"errids": {
+		"login_first": "请先登录",
+		"logout_first": "请先退出登录",
+		"no_op": "您没有管理员权限",
+		"repl_first": "请先进行身份替换",
+		"deleted": "该文章已被删除",
+		"user_not_found": "用户不存在",
+		"not_found": "文章不存在"
+	}
+}
