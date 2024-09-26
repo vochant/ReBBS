@@ -69,7 +69,7 @@ router.post('/security_api', (req, res) => {
 			res.status(200).json({error: "密码必须仅由大小写字母、数字和部分特殊符号组成，且至少为6位！"});
 			return;
 		}
-		if (setProfile(req.loginStat, "password", obj.balue)) {
+		if (setProfile(req.loginStat, "password", obj.value)) {
 			res.status(200).json({error: "服务器文件系统错误！"});
 			return;
 		}
