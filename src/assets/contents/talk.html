@@ -3,38 +3,283 @@
 		window.socket = io(`${window.origin}`, {
 			withCredentials: true
 		});
-		socket.emit('init', '<%= loadThread %>');
+		socket.on('list', (msg) => {
+			let o = JSON.parse(msg);
+			layoutManager.makeList(o.data);
+			for (var i = 0; i < o.data.length; i++) {
+				window.serverIO.origin['t' + o.data[i].id] = o.data[i].count;
+				window.serverIO.blocks['t' + o.data[i].id] = Math.floor((o.data[i].count - 1) / 100);
+			}
+			if (!serverIO.Init) {
+				serverIO.Init = true;
+				if (layoutManager.active != -1) {
+					serverIO.view();
+					layoutManager.markRead(layoutManager.active);
+					serverIO.tryfetchmore();
+				}
+			}
+		});
+		window.errids = {
+			'no_cookie': '连接请求没有包含 Cookie',
+			'login_first': '请先登录',
+			'banned': '您无权使用私信/群组',
+			'json_format': '错误的 JSON 格式',
+			'no_thread': '没有这个消息通道',
+			'thread_format': '错误的消息通道格式',
+			'join_thread': '您不属于这个消息通道',
+			'no_text': '请求没有消息负载',
+			'no_page': '请求没有消息分页号',
+			'ix_format': '消息分页格式错误',
+			'ix_range': '没有这个消息分页'
+		};
+		socket.on('push', (msg) => {
+			let o = JSON.parse(msg);
+			if (o.thread == layoutManager.active) layoutManager.pushes(o.data);
+			if (layoutManager.Load) {
+				layoutManager.Load = false;
+				let outer = $('#msg-outer').get(0);
+				outer.scrollTop = outer.scrollHeight - outer.offsetHeight;
+			}
+		});
+		socket.on('message', (msg) => {
+			let o = JSON.parse(msg);
+			window.serverIO.origin['t' + o.thread]++;
+			if (o.thread == layoutManager.active) {
+				layoutManager.setText(o.thread, o.rawtext);
+				layoutManager.send({
+					time: o.time,
+					name: o.name,
+					sender: o.sender,
+					content: o.text
+				});
+			}
+			else {
+				layoutManager.markUnread(o.thread, o.rawtext);
+			}
+		});
+		socket.on('eh', (msg) => {
+			mdui.alert(errids[msg.replaceAll('"', '')], '错误');
+		});
 		window.markdownEditor = new MarkdownPalettes("#text");
 		$("#send").click(() => {
+			serverIO.send(markdownEditor.content);
+			markdownEditor.content = "";
 		})
+		window.serverIO = function() {
+			let obj = {};
+			let Init = false;
+			obj.blocks = {};
+			obj.origin = {};
+			obj.tryfetchmore = function() {
+				if (obj.blocks['t' + layoutManager.active] == -1) return;
+				else {
+					socket.emit('recv', JSON.stringify({
+						thread: layoutManager.active,
+						index: obj.blocks['t' + layoutManager.active]
+					}));
+					obj.blocks['t' + layoutManager.active]--;
+				}
+			}
+			obj.send = function(msg) {
+				if (obj.active == -1) return;
+				socket.emit('send', JSON.stringify({
+					thread: layoutManager.active,
+					text: msg
+				}));
+			}
+			obj.view = function() {
+				if (obj.active == -1) return;
+				socket.emit('view', JSON.stringify({
+					thread: layoutManager.active
+				}));
+			}
+			return obj;
+		}();
+		window.layoutManager = function() {
+			let obj = {};
+			obj.me = <%= user %>;
+			obj.active = <%= loadThread %>;
+			obj.Load = false;
+			obj.selfSend = function(time, sender, icon, content, up = false) {
+				let elem = document.createElement('div');
+				elem.setAttribute('style', 'clear:both;text-align:right;');
+				let img = document.createElement('img');
+				img.src = icon;
+				img.title = sender;
+				img.setAttribute('class', 'mdui-img mdui-img-circle');
+				img.setAttribute('style', 'float:right;width:45px;height:45px;margin:5px;');
+				elem.appendChild(img);
+				let d = document.createElement('div');
+				d.setAttribute('style', 'float:right;max-width:70%;');
+				let text = document.createElement('a');
+				text.innerText = sender + " " + time;
+				d.appendChild(text);
+				d.appendChild(document.createElement('br'));
+				let a = document.createElement('div');
+				a.setAttribute('class', 'mdui-shadow-3 mdui-typo self-msg');
+				a.innerHTML = content;
+				d.appendChild(a);
+				d.appendChild(document.createElement('br'));
+				elem.appendChild(d);
+				if (up) {
+					$("#msg-container").get(0).prepend(elem);
+				}
+				else {
+					let outer = $('#msg-outer').get(0);
+					let delta = outer.scrollHeight - outer.scrollTop - outer.offsetHeight;
+					$("#msg-container").get(0).appendChild(elem);
+					if (delta < 25) {
+						outer.scrollTop = outer.scrollHeight - outer.offsetHeight;
+					}
+				}
+			}
+			obj.anoSend = function(time, sender, icon, content, up = false) {
+				let elem = document.createElement('div');
+				elem.setAttribute('style', 'clear:both;text-align:left;');
+				let img = document.createElement('img');
+				img.src = icon;
+				img.title = sender;
+				img.setAttribute('class', 'mdui-img mdui-img-circle');
+				img.setAttribute('style', 'float:left;width:45px;height:45px;margin:5px;');
+				elem.appendChild(img);
+				let d = document.createElement('div');
+				d.setAttribute('style', 'float:left;max-width:70%;');
+				let text = document.createElement('a');
+				text.innerText = sender + " " + time;
+				d.appendChild(text);
+				d.appendChild(document.createElement('br'));
+				let a = document.createElement('div');
+				a.setAttribute('class', 'mdui-shadow-3 mdui-typo ano-msg');
+				a.innerHTML = content;
+				d.appendChild(a);
+				d.appendChild(document.createElement('br'));
+				elem.appendChild(d);
+				if (up) {
+					$("#msg-container").get(0).prepend(elem);
+				}
+				else {
+					let outer = $('#msg-outer').get(0);
+					let delta = outer.scrollHeight - outer.scrollTop - outer.offsetHeight;
+					$("#msg-container").get(0).appendChild(elem);
+					if (delta < 25) {
+						outer.scrollTop = outer.scrollHeight - outer.offsetHeight;
+					}
+				}
+			}
+			obj.notify = function(content, up = false) {
+				let elem = document.createElement('div');
+				elem.setAttribute('style', 'clear:both;text-align:center;');
+				let a = document.createElement('b');
+				elem.setAttribute('class', 'mdui-text-color-black-secondary');
+				a.innerText = content;
+				elem.appendChild(a);
+				elem.appendChild(document.createElement('br'));
+				if (up) {
+					$("#msg-container").get(0).prepend(elem);
+				}
+				else {
+					let outer = $('#msg-outer').get(0);
+					let delta = outer.scrollHeight - outer.scrollTop - outer.offsetHeight;
+					$("#msg-container").get(0).appendChild(elem);
+					if (delta < 25) {
+						outer.scrollTop = outer.scrollHeight - outer.offsetHeight;
+					}
+				}
+			}
+			obj.clear = function() {
+				$("#msg-container").get(0).innerHTML = "";
+			}
+			obj.send = function(o, up = false) {
+				if (o.sender == -1) {
+					obj.notify(o.content, up);
+				}
+				else if (o.sender == obj.me) {
+					obj.selfSend(o.time, o.name, '/file/usericon/' + obj.me + '.png', o.content, up);
+				}
+				else {
+					obj.anoSend(o.time, o.name, '/file/usericon/' + o.sender + '.png', o.content, up);
+				}
+			}
+			obj.sends = function(pack) {
+				for (var i = 0; i < pack.length; i++) {
+					obj.send(pack[i]);
+				}
+			}
+			obj.pushes = function(pack) {
+				pack = pack.reverse();
+				for (var i = 0; i < pack.length; i++) {
+					obj.send(pack[i], true);
+				}
+			}
+			obj.createEntry = function(pack) {
+				let entry = document.createElement('a');
+				entry.setAttribute('class', 'mdui-list-item mdui-ripple');
+				let a = document.createElement('div');
+				a.setAttribute('class', 'mdui-list-item-avatar');
+				let img = document.createElement('img');
+				img.src = pack.icon;
+				img.title = pack.name;
+				a.appendChild(img);
+				entry.appendChild(a);
+				let text = document.createElement('div');
+				text.setAttribute('class', 'mdui-list-item-content');
+				text.innerText = pack.name;
+				let accent = document.createElement('a');
+				accent.setAttribute('class', 'mdui-text-color-black-secondary mdui-text-truncate');
+				accent.innerText = pack.last;
+				accent.setAttribute('id', `accent_${pack.id}`);
+				let unreadTag = document.createElement('a');
+				unreadTag.setAttribute('style', pack.unread ? '' : 'display:none;');
+				unreadTag.innerText = '[未读]';
+				unreadTag.setAttribute('class', 'unread');
+				unreadTag.setAttribute('id', `unread_${pack.id}`);
+				text.appendChild(document.createElement('br'));
+				text.appendChild(unreadTag);
+				text.appendChild(accent);
+				entry.appendChild(text);
+				entry.href = `javascript:layoutManager.switchTo(${pack.id});`;
+				$("#talk-list").get(0).appendChild(entry);
+			}
+			obj.makeList = function(packet) {
+				for (var i = 0; i < packet.length; i++) {
+					obj.createEntry(packet[i]);
+				}
+			}
+			obj.markRead = function(id) {
+				$(`#unread_${id}`).get(0).setAttribute('style', 'display:none;');
+			}
+			obj.setText = function(id, text) {
+				$(`#accent_${id}`).get(0).innerText = text;
+			}
+			obj.markUnread = function(id, text) {
+				$(`#unread_${id}`).get(0).setAttribute('style', '');
+				setText(id, text);
+			}
+			obj.switchTo = function(id) {
+				obj.clear();
+				serverIO.blocks['t' + id] = Math.floor((serverIO.origin['t' + id] - 1) / 100);
+				obj.active = id;
+				serverIO.view();
+				obj.markRead(id);
+				obj.Load = true;
+				serverIO.tryfetchmore();
+			}
+			return obj;
+		}();
+		$("#msg-outer").scroll(() => {
+			if ($("#msg-outer").scrollTop() <= 25 && layoutManager.active != -1) serverIO.tryfetchmore();
+		});
+		socket.emit('init', '<%= loadThread %>');
 	});
-</script>
-<script>
-	window.serverIO = function() {
-		let obj = {}
-	}();
-	window.layoutManager = function() {
-		let obj = {};
-		obj.selfSend = function(content) {
-			let elem = document.createElement('div');
-			elem.setAttribute('style', 'float:right;text-align:right;');
-			
-		}
-	}();
 </script>
 <link rel="stylesheet" href="/file/markdown-palettes.css">
 <script src="/file/markdown-palettes.js"></script>
 <script src="/file/js/socket.io.min.js"></script>
 <div class="mdui-shadow-2" style="width:20%;height:100%;float:left;">
-	<div class="mdui-list" id="talk-list">
-		<a class="mdui-list-item mdui-ripple" href="/">
-			<i class="mdui-list-item-icon mdui-icon material-icons">home</i>
-			<div class="mdui-list-item-content">回到主页</div>
-		</a>
-	</div>
+	<div class="mdui-list" id="talk-list"></div>
 </div>
 <div id="talk-container" style="height:100%;float:left;width:65%;" class="mdui-shadow-2">
-	<div class="mdui-shadow-2" style="width:100%;height:65%;position:relative;overflow-y:scroll;scroll-behavior:smooth;overscroll-behavior:contain;">
+	<div class="mdui-shadow-2" style="width:100%;height:65%;position:relative;overflow-y:scroll;scroll-behavior:smooth;overscroll-behavior:contain;background-color:#eff" id="msg-outer">
 		<div style="width:calc(100%-30px); padding:15px;" id="msg-container"></div>
 	</div>
 	<div style="width:100%;height:35%;position:relative;" id="editor-container" class="mdui-shadow-2">
@@ -43,11 +288,38 @@
 </div>
 <div id="control" style="height:100%;float:left;width:15%;" class="mdui-shadow-2"></div>
 <style>
+	.unread {
+		color: #ff0000!important;
+	}
 	#main-container {
 		position:absolute;
 		width: 100%;
 		padding-bottom: 20px!important;
 		max-width: unset!important;
+	}
+	.self-msg {
+		text-align:left;
+		white-space:normal;
+		word-break:break-all;
+		border-radius:15px;
+		border-top-right-radius:3px;
+		padding:8px;
+		background-color:#ffe;
+		width: max-content;
+		max-width: 100%;
+		float: right;
+	}
+	.ano-msg {
+		text-align:left;
+		white-space:normal;
+		word-break:break-all;
+		border-radius:15px;
+		border-top-left-radius:3px;
+		padding:8px;
+		background-color:#fff;
+		width: max-content;
+		max-width: 100%;
+		float: left;
 	}
 	footer {
 		display: none;

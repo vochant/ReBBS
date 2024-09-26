@@ -1,4 +1,4 @@
-import {readFileSync, writeFileSync} from 'fs';
+import {readFileSync, writeFileSync} from './cache.js';
 import {getUidLimit} from './profile.js';
 import {setPerm} from './permission.js';
 import {GetLoginStat} from './security.js';

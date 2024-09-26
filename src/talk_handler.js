@@ -1,6 +1,5 @@
 import Router from 'express';
 import {Template} from './util/template.js';
-import {GetLoginStat, getPassword, Hash2} from './util/security.js';
 import {renderFile} from 'ejs';
 import {getProfile, getUidLimit} from './util/profile.js';
 import {get_private} from './util/thread.js';
@@ -48,7 +47,8 @@ function Load(req, res, th) {
 		return;
 	}
 	renderFile("./src/assets/contents/talk.html", {
-		loadThread: th
+		loadThread: th,
+		user: req.loginStat
 	}, (err, hypertext) => {
 		res.send(Template({
 			title: "信息",

@@ -1,5 +1,6 @@
 import Router from 'express';
-import {readFileSync, writeFileSync} from 'fs';
+import {writeFileSync as owriteFileSync} from 'fs';
+import {readFileSync} from './util/cache.js';
 import {setDesc, getProfile, writeProfile, getUidLimit} from './util/profile.js'
 
 /*
@@ -44,7 +45,7 @@ router.post("/iconset", (req, res) => {
     var base64Data = imgData.replace(/^data:image\/\w+;base64,/, "");
     var dataBuffer = Buffer.from(base64Data, 'base64');
 	var flag = false;
-    writeFileSync(`./web/usericon/${req.loginStat}.png`, dataBuffer, function(err) {
+    owriteFileSync(`./web/usericon/${req.loginStat}.png`, dataBuffer, function(err) {
 		flag = true;
         if (err) {
         	res.status(200).json({error: "服务器文件系统错误！"});

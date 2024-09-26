@@ -1,4 +1,4 @@
-import {readFileSync, writeFileSync} from 'fs';
+import {readFileSync} from './cache.js';
 import {htmlenc} from './htmlenc.js';
 
 export const Template = (config, hypertext) => {

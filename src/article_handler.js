@@ -1,6 +1,6 @@
 import Router from 'express';
 import {Template} from './util/template.js';
-import {readFileSync, writeFileSync} from 'fs';
+import {readFileSync} from './util/cache.js';
 import {renderFile} from 'ejs';
 import {getProfile} from './util/profile.js';
 import markdown from './util/markdown.js';

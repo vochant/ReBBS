@@ -84,7 +84,7 @@
 						<% } else { %>
 							关注
 						<% } %></a>
-					<a class="mdui-btn mdui-ripple mdui-ripple-white" href="/message?to=<%= uid %>">私信</a>
+					<a class="mdui-btn mdui-ripple mdui-ripple-white" href="/message/private/<%= uid %>">私信</a>
 					<a class="mdui-btn mdui-ripple mdui-ripple-white" id="ban" href="javascript:change_ban(<%= uid %>)"><% if (banned) { %>取消拉黑<% } else { %>拉黑<% } %></a>
 				<% } else if (req.loginStat != -1) { %>
 					<a class="mdui-btn mdui-ripple mdui-ripple-white" href="/settings/">设置</a>

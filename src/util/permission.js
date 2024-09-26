@@ -1,4 +1,4 @@
-import {readFileSync, writeFileSync} from 'fs';
+import {readFileSync, writeFileSync} from './cache.js';
 
 export const getPerm = (uid) => {
 	if (uid == -1) return {

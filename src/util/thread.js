@@ -1,4 +1,4 @@
-import {readFileSync, writeFileSync} from 'fs';
+import {readFileSync, writeFileSync} from './cache.js';
 import { getProfile, writeProfile } from './profile.js';
 import markdown from './markdown.js';
 import 'moment';
@@ -15,14 +15,21 @@ export const create_msg = (thread, sender, text, tm) => {
 		sender: sender
 	});
 	writeFileSync(`./data/threads/t${thread}blk${Math.floor(th.msgs / 1000)}.json`, JSON.stringify(original), "utf-8");
+	th.msgs++;
+	writeFileSync(`./data/threads/${thread}.json`, JSON.stringify(th), "utf-8");
 }
 
 export const get_msg = (thread, hundreds) => {
 	var blkid = Math.floor(hundreds / 10);
 	var obj = JSON.parse(readFileSync(`./data/threads/t${thread}blk${blkid}.json`, "utf-8"));
-	var upTo = Math.min(100 * (hundreds % 10), obj.db.length);
+	var upTo = Math.min(100 * ((hundreds % 10) + 1), obj.db.length + 1);
 	return obj.db.slice(100 * (hundreds % 10), upTo).map((v) => {
-		return {content: markdown.render(v.content), time: v.time, sender: v.sender};
+		return {
+			content: markdown.render(v.content),
+			time: v.time,
+			sender: v.sender,
+			name: getProfile(v.sender).userName
+		};
 	});
 }
 
@@ -33,7 +40,8 @@ export const get_hundreds = (thread) => {
 
 export const mark_unread = (thread, user, stat) => {
 	var th = JSON.parse(readFileSync(`./data/threads/${thread}.json`, "utf-8"));
-	th.unread[user] = stat;
+	let userIndex = th.users.indexOf(user);
+	th.unread[userIndex] = stat;
 	writeFileSync(`./data/threads/${thread}.json`, JSON.stringify(th), 'utf-8');
 }
 
@@ -79,8 +87,10 @@ export const get_thread_info = (thread, user) => {
 	var th = JSON.parse(readFileSync(`./data/threads/${thread}.json`, "utf-8"));
 	if (th.msgs == 0) var last_page = {db:[{content:'暂无消息', tm:'N/A', sender:0}]};
 	else var last_page = JSON.parse(readFileSync(`./data/threads/t${thread}blk${Math.floor((th.msgs - 1) / 1000)}.json`));
-	data.last = last_page.db[last_page.db.length - 1];
+	data.last = (last_page.db[last_page.db.length - 1].sender == 0 ? ':' : (last_page.db[last_page.db.length - 1].sender == user ? '我' : getProfile(last_page.db[last_page.db.length - 1].sender).userName)) + ': ' + last_page.db[last_page.db.length - 1].content;
 	data.unread = th.unread[th.users.indexOf(user)];
+	data.id = thread;
+	data.count = th.msgs;
 	if (th.owner == -1) {
 		var side = th.users[0] == user ? th.users[1] : th.users[0];
 		data.icon = `/file/usericon/${side}.png`;

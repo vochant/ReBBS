@@ -1,4 +1,4 @@
-import {readFileSync, writeFileSync} from 'fs';
+import {readFileSync, writeFileSync} from './cache.js';
 
 export const getProfile = function(uid) {
 	if (uid == -1) return {userName: "未登录"};

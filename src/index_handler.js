@@ -1,7 +1,7 @@
 import Router from 'express';
 import {Template} from './util/template.js';
 import {GetLoginStat, getPassword, Hash2} from './util/security.js';
-import {readFileSync, writeFileSync} from 'fs';
+import {readFileSync, writeFileSync} from './util/cache.js';
 import {renderFile} from 'ejs';
 import Identicon from 'identicon.js';
 import {createHash} from 'crypto';

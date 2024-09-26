@@ -3,10 +3,10 @@ import markdown from './util/markdown.js';
 import {getProfile} from './util/profile.js';
 import {getPerm} from './util/permission.js';
 import {create_msg, get_msg, get_hundreds, mark_unread, check_new, get_thread_info} from './util/thread.js';
-import {readFileSync} from 'fs';
+import {readFileSync} from './util/cache.js';
 import cookie from 'cookie';
 import {GetLoginStat} from './util/security.js';
-import 'moment';
+import moment from 'moment';
 
 let rmap = {}, view = {};
 
@@ -51,11 +51,7 @@ export const Bind = function(server) {
 				sendMsg(socket, 'eh', 'no_thread');
 				return;
 			}
-			if (!(obj.thread instanceof Number)) {
-				sendMsg(socket, 'eh', 'thread_format');
-				return;
-			}
-			if (obj.thread != Math.floor(obj.thread)) {
+			if (!Number.isInteger(obj.thread)) {
 				sendMsg(socket, 'eh', 'thread_format');
 				return;
 			}
@@ -65,6 +61,11 @@ export const Bind = function(server) {
 			}
 			if (!obj.text) {
 				sendMsg(socket, 'eh', 'no_text');
+				return;
+			}
+			if (obj.text == '') {
+				sendMsg(socket, 'eh', 'no_text');
+				return;
 			}
 			var tm = moment().format('YYYY/MM/DD HH:mm:ss');
 			// 如果先前是空列表，使它出现在列表之中
@@ -74,7 +75,7 @@ export const Bind = function(server) {
 					data: [
 						{
 							icon: `/file/usericon/${uid}.png`,
-							name: getPorfile(uid).userName,
+							name: getProfile(uid).userName,
 							last: '',
 							unread: false
 						}
@@ -87,15 +88,18 @@ export const Bind = function(server) {
 				if (rmap['u' + th.users[i]]) {
 					sendMsg(rmap['u' + th.users[i]], 'message', {
 						sender: loginStat,
+						name: getProfile(loginStat).userName,
 						text: ren,
-						time: tm
+						rawtext: obj.text,
+						time: tm,
+						thread: obj.thread
 					});
-					if (view['u' + th.users[i]] != th) {
-						mark_unread(th, th.users[i], true);
+					if (view['u' + th.users[i]] != obj.thread) {
+						mark_unread(obj.thread, th.users[i], true);
 					}
 				}
 				else {
-					mark_unread(th, th.users[i], true);
+					mark_unread(obj.thread, th.users[i], true);
 				}
 			}
 		});
@@ -111,11 +115,7 @@ export const Bind = function(server) {
 				sendMsg(socket, 'eh', 'no_thread');
 				return;
 			}
-			if (!(obj.thread instanceof Number)) {
-				sendMsg(socket, 'eh', 'thread_format');
-				return;
-			}
-			if (obj.thread != Math.floor(obj.thread)) {
+			if (!Number.isInteger(obj.thread)) {
 				sendMsg(socket, 'eh', 'thread_format');
 				return;
 			}
@@ -123,6 +123,7 @@ export const Bind = function(server) {
 				sendMsg(socket, 'eh', 'join_thread');
 				return;
 			}
+			view['u' + loginStat] = obj.thread;
 			mark_unread(obj.thread, loginStat, false);
 		});
 
@@ -138,11 +139,7 @@ export const Bind = function(server) {
 				sendMsg(socket, 'eh', 'no_thread');
 				return;
 			}
-			if (!(obj.thread instanceof Number)) {
-				sendMsg(socket, 'eh', 'thread_format');
-				return;
-			}
-			if (obj.thread != Math.floor(obj.thread)) {
+			if (!Number.isInteger(obj.thread)) {
 				sendMsg(socket, 'eh', 'thread_format');
 				return;
 			}
@@ -150,19 +147,15 @@ export const Bind = function(server) {
 				sendMsg(socket, 'eh', 'join_thread');
 				return;
 			}
-			if (!obj.index) {
+			if (!obj) {
 				sendMsg(socket, 'eh', 'no_page');
 				return;
 			}
-			if (!(obj.index instanceof Number)) {
+			if (!Number.isInteger(obj.index)) {
 				sendMsg(socket, 'eh', 'ix_format');
 				return;
 			}
-			if (obj.index != Math.floor(obj.index)) {
-				sendMsg(socket, 'eh', 'ix_format');
-				return;
-			}
-			if (obj.index < 0 || obj.index > get_hundreds(obj.thread)) {
+			if (obj.index < 0 || obj.index >= get_hundreds(obj.thread)) {
 				sendMsg(socket, 'eh', 'ix_range');
 				return;
 			}
@@ -191,7 +184,7 @@ export const Bind = function(server) {
 			var prof = getProfile(loginStat);
 			// console.log(prof.relationship.groups);
 			for (var i = 0; i < prof.relationship.groups.length; i++) {
-				// if (prof.relationship.groups[i] != e && check_new(prof.relationship.groups[i], loginStat)) continue;
+				if (prof.relationship.groups[i] != e && check_new(prof.relationship.groups[i], loginStat) != -1) continue;
 				res.data.push(get_thread_info(prof.relationship.groups[i], loginStat));
 			}
 			sendMsg(socket, 'list', res);

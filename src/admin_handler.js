@@ -2,7 +2,7 @@ import Router from 'express';
 import {Template} from './util/template.js';
 import {GetLoginStat, UserAdminStat} from './util/security.js';
 import {getProfile, getUidLimit} from './util/profile.js';
-import {readFileSync, writeFileSync} from 'fs';
+import {readFileSync} from './util/cache.js';
 import {renderFile} from 'ejs';
 import {newToken, makeChange, splitOperation} from './util/judgement.js';
 
