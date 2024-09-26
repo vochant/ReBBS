@@ -1,0 +1,34 @@
+<div class="mdui-typo">
+	<h1>OICM Markdown Document</h1>
+	<hr>
+	<blockquote>
+		<p>望丰展，使 MD。<br>——洛谷</p>
+	</blockquote>
+	<p>OICM 使用 Markdown 渲染文本，在主论坛、私信、群组、博客等都是如此。若希望获得更丰富的展现，请使用 Markdown 和 KaTeX。</p>
+	<p>OICM 使用 Markdown-It 作为 Markdown 渲染引擎，并安装有以下插件：</p>
+	<ul>
+		<li>markdown-it-katex - KaTeX 兼容</li>
+		<li>markdown-it-imsize - 图片大小调整</li>
+		<li>markdown-it-footnote - 脚注</li>
+		<li>markdown-it-highlightjs - 代码高亮</li>
+		<li>markdown-it-sub - 下标</li>
+		<li>markdown-it-sup - 上标</li>
+		<li>markdown-it-spoiler - 隐藏文字/吐槽</li>
+		<li>markdown-it-mark - 高亮</li>
+		<li>markdown-it-merge-cells - 列表扩展</li>
+		<li>markdown-it-media (改自 HydroOJ) - 媒体等的支持</li>
+	</ul>
+	<p>注意：全部渲染插件均安装在服务端。Markdown 编辑器使用洛谷团队的 Markdown*Palettes，渲染结果可能和本网站不一致。</p>
+	<p>OICM 使用 KaTeX 作为 LaTeX 渲染引擎，注意需要四个而不是两个反斜杠实现换行。</p>
+	<h3 class="article-title">常用扩展语法</h3>
+	<code>==Text==</code><mark>Text</mark><br>
+	<code>!!Text!!</code><span  class="spoiler">Text</span><br>
+	<code>^Sup^ ~Sub~</code><sup>Sup</sup><sub>Sub</sub><br>
+	<code>@[video or url](/path/to/video)</code> 视频<br>
+	<code>@[pdf](/path/to/pdf)</code> PDF<br>
+	<code>@[msoffice](/path/to/msoffice-file)</code> Microsoft Office 文件(仅限公网地址)<br>
+	<code>@[bilibili](BV or AV)</code> 哔哩哔哩视频
+	<code>@[youtube](watch-id)</code> YouTube 视频 (梯子自备)
+	<code>@[user](uid)</code> 提及用户
+	<p>另外，markdown-it-media 也支持 vimeo、vine、prezi 平台的引用，虽然通常不会用到。关于如何使用 markdown-it-imsize 和 markdown-it-footnote 请自行查阅。markdown-it-merge-cells 会合并列表中相邻的相同元素。</p>
+</div>

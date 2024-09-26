@@ -135,7 +135,7 @@ export const Template = (config, hypertext) => {
 			</div>
 			<footer id="footer">
 				<div style="padding: 20px; color: #fff" class="mdui-typo">
-					Copyright (C) 2019-2024 Minphtis Development, 2009-2024 Mirekintoc Void.<br>
+					Copyright (C) 2009-2024 Mirekintoc Void.<br>
 					<a href="/report">用户服务中心/举报/反馈</a> | <a href="/redirect/gh">GitHub仓库</a> | <a href="/eula">《最终用户许可协议》</a><br>
 					<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 					<span id="busuanzi_value_page_pv"></span> / <span id="busuanzi_value_site_pv"></span> 次访问共 <span id="busuanzi_value_site_uv"></span> 人<br>

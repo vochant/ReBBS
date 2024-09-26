@@ -5,6 +5,7 @@
 // Entry/Main
 
 import { fileURLToPath } from 'url'
+import {createServer} from 'http';
 import Path from 'path'
 import Express from 'express';
 import {renderFile} from 'ejs';
@@ -66,14 +67,15 @@ import AdminHandler from './src/admin_handler.js';
 import OptionHandler from './src/settings_handler.js';
 import UserHandler from './src/user_handler.js';
 import ArticleHandler from './src/article_handler.js';
-import WSHandler from './src/ws_handler.js';
+import {Bind} from './src/ws_handler.js';
+import MessageHandler from './src/talk_handler.js';
 
 app.use(`/admin`, AdminHandler);
 // app.use(`/detail`, DetailHandler);
 app.use(`/userapi`, UserHandler);
 // app.use(`/file`, FileHandler);
 app.use(`/article`, ArticleHandler);
-// app.use(`/message`, MessageHandler);
+app.use(`/message`, MessageHandler);
 // app.use(`/notifications`, NotificationsHandler);
 // app.use(`/share`, SharingHandler);
 // app.use('/redirect', RedirectHandler);
@@ -82,13 +84,9 @@ app.use('/settings', OptionHandler);
 // app.use('/redirect', RedirectHandler);
 app.use(`/`, IndexHandler);
 
-app.use('/wsserver', WSHandler);
+// app.use('/wsserver', WSHandler);
 
 app.use("/file", Express.static(Path.join(Path.dirname(fileURLToPath(import.meta.url)), 'web')));
-
-app.listen(prof.port, () => {
-    console.log(`Port :${prof.port} is opened`);
-});
 
 app.get('/error/:eid', (req, res) => {
 	res.send(Template({
@@ -116,4 +114,10 @@ app.get('*', (req, res) => {
 			userName: req.loginStat != -1 ? getProfile(req.loginStat).userName : "未登录"
 		}, hypertext));
 	});
-})
+});
+
+const server = createServer(app);
+Bind(server);
+server.listen(prof.port, () => {
+    console.log(`Port :${prof.port} is opened`);
+});

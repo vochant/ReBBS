@@ -74,9 +74,11 @@ export const check_new = (thread, user) => {
 }
 
 export const get_thread_info = (thread, user) => {
+	// console.log(thread, user);
 	var data = {};
 	var th = JSON.parse(readFileSync(`./data/threads/${thread}.json`, "utf-8"));
-	var last_page = JSON.parse(readFileSync(`./data/threads/t${thread}blk${Math.floor(th.msgs / 1000)}.json`));
+	if (th.msgs == 0) var last_page = {db:[{content:'暂无消息', tm:'N/A', sender:0}]};
+	else var last_page = JSON.parse(readFileSync(`./data/threads/t${thread}blk${Math.floor((th.msgs - 1) / 1000)}.json`));
 	data.last = last_page.db[last_page.db.length - 1];
 	data.unread = th.unread[th.users.indexOf(user)];
 	if (th.owner == -1) {

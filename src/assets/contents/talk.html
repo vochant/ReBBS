@@ -1,0 +1,56 @@
+<script>
+	$(document).ready(() => {
+		window.socket = io(`${window.origin}`, {
+			withCredentials: true
+		});
+		socket.emit('init', '<%= loadThread %>');
+		window.markdownEditor = new MarkdownPalettes("#text");
+		$("#send").click(() => {
+		})
+	});
+</script>
+<script>
+	window.serverIO = function() {
+		let obj = {}
+	}();
+	window.layoutManager = function() {
+		let obj = {};
+		obj.selfSend = function(content) {
+			let elem = document.createElement('div');
+			elem.setAttribute('style', 'float:right;text-align:right;');
+			
+		}
+	}();
+</script>
+<link rel="stylesheet" href="/file/markdown-palettes.css">
+<script src="/file/markdown-palettes.js"></script>
+<script src="/file/js/socket.io.min.js"></script>
+<div class="mdui-shadow-2" style="width:20%;height:100%;float:left;">
+	<div class="mdui-list" id="talk-list">
+		<a class="mdui-list-item mdui-ripple" href="/">
+			<i class="mdui-list-item-icon mdui-icon material-icons">home</i>
+			<div class="mdui-list-item-content">回到主页</div>
+		</a>
+	</div>
+</div>
+<div id="talk-container" style="height:100%;float:left;width:65%;" class="mdui-shadow-2">
+	<div class="mdui-shadow-2" style="width:100%;height:65%;position:relative;overflow-y:scroll;scroll-behavior:smooth;overscroll-behavior:contain;">
+		<div style="width:calc(100%-30px); padding:15px;" id="msg-container"></div>
+	</div>
+	<div style="width:100%;height:35%;position:relative;" id="editor-container" class="mdui-shadow-2">
+		<div id="text"></div>
+	</div>
+</div>
+<div id="control" style="height:100%;float:left;width:15%;" class="mdui-shadow-2"></div>
+<style>
+	#main-container {
+		position:absolute;
+		width: 100%;
+		padding-bottom: 20px!important;
+		max-width: unset!important;
+	}
+	footer {
+		display: none;
+	}
+</style>
+<a class="mdui-fab mdui-fab-fixed mdui-color-theme-accent" id="send"><i class="mdui-icon material-icons">send</i></a>

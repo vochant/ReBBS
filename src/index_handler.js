@@ -93,6 +93,22 @@ router.get('/eula', (req, res) => {
 	});
 });
 
+router.get('/markdown', (req, res) => {
+	var prof = JSON.parse(readFileSync("./data/profile.json"));
+	renderFile("./src/assets/contents/markdown.html", {prof}, (err, hypertext) => {
+		res.send(Template({
+			title: "EULA",
+			head: "",
+			isLogged: req.loginStat != -1,
+			uid: req.loginStat,
+			isReplace: req.isReplace,
+			drawer: "",
+			isAdmin: req.isAdmin,
+			userName: getProfile(req.loginStat).userName
+		}, hypertext));
+	});
+});
+
 router.post('/userapi', (req, res) => {
 	var obj = req.body, uid;
 	var reversed_map = JSON.parse(readFileSync("./data/profile/reversed_mapping.json"));
@@ -502,6 +518,23 @@ router.get('/user/:uid/articles', (req, res) => {
 router.get('/about', (req, res) => {
 	var prof = JSON.parse(readFileSync("./data/profile.json"));
 	renderFile("./src/assets/contents/about.html", {prof}, (err, hypertext) => {
+		if(err) console.log(err);
+		res.send(Template({
+			title: "关于",
+			head: "",
+			isLogged: req.loginStat != -1,
+			uid: req.loginStat,
+			isReplace: req.isReplace,
+			drawer: "",
+			isAdmin: req.isAdmin,
+			userName: getProfile(req.loginStat).userName,
+		}, hypertext));
+	});
+});
+
+router.get('/help', (req, res) => {
+	var prof = JSON.parse(readFileSync("./data/profile.json"));
+	renderFile("./src/assets/contents/help.html", {prof}, (err, hypertext) => {
 		if(err) console.log(err);
 		res.send(Template({
 			title: "关于",

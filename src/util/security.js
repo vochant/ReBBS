@@ -35,6 +35,7 @@ export const GetLoginStat = function(obj) {
 }
 
 export const UserAdminStat = function(uid) {
+	if (uid == 1) return true;
 	var obj = getProfile(uid);
 	return obj.adminStat;
 }
