@@ -134,7 +134,7 @@ router.post('/userapi', (req, res) => {
 			res.cookie("login-cache", JSON.stringify({
 				uid: uid,
 				passwd: Hash2(obj.passwd)
-			}), {maxAge: 114 * 1000 * 60 * 60 * 24});
+			}), {maxAge: 400 * 60 * 60 * 24});
 			res.status(200).json({});
 		}
 		else res.status(200).json({error: "用户名或密码错误！"});
@@ -155,7 +155,7 @@ router.post('/userapi', (req, res) => {
 			res.status(200).json({error: "密码必须仅由大小写字母、数字和部分特殊符号组成，且至少为6位！"});
 			return;
 		}
-		if (obj.user.includes('#')) {
+		if (obj.user.includes('@')) {
 			res.status(200).json({error: "用户名不能包含字符@！"});
 			return;
 		}
@@ -254,7 +254,7 @@ router.post('/userapi', (req, res) => {
 		res.cookie("login-cache", JSON.stringify({
 			uid: uid,
 			passwd: Hash2(obj.passwd)
-		}), {maxAge: 114 * 1000 * 60 * 60 * 24});
+		}), {maxAge: 400 * 60 * 60 * 24});
 		res.status(200).json({});
 	}
 	else if (obj.method == "logout") {

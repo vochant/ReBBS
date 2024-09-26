@@ -71,20 +71,13 @@ import {Bind} from './src/ws_handler.js';
 import MessageHandler from './src/talk_handler.js';
 
 app.use(`/admin`, AdminHandler);
-// app.use(`/detail`, DetailHandler);
 app.use(`/userapi`, UserHandler);
 // app.use(`/drive`, DriveHandler);
 app.use(`/article`, ArticleHandler);
 app.use(`/message`, MessageHandler);
 // app.use(`/notifications`, NotificationsHandler);
-// app.use(`/share`, SharingHandler);
-// app.use('/redirect', RedirectHandler);
-// app.use('/tools', ToolchainHandler);
 app.use('/settings', OptionHandler);
-// app.use('/redirect', RedirectHandler);
 app.use(`/`, IndexHandler);
-
-// app.use('/wsserver', WSHandler);
 
 app.use("/file", Express.static(Path.join(Path.dirname(fileURLToPath(import.meta.url)), 'web')));
 
