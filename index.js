@@ -1,5 +1,5 @@
-// Mirekintoc Community System
-// Copyright (C) 2009-2023 Mirekintoc Void.
+// ReBBS System
+// Copyright (C) 2009-2024 Mirekintoc Void.
 // Under MIT License.
 
 // Entry/Main
@@ -73,7 +73,7 @@ import MessageHandler from './src/talk_handler.js';
 app.use(`/admin`, AdminHandler);
 // app.use(`/detail`, DetailHandler);
 app.use(`/userapi`, UserHandler);
-// app.use(`/file`, FileHandler);
+// app.use(`/drive`, DriveHandler);
 app.use(`/article`, ArticleHandler);
 app.use(`/message`, MessageHandler);
 // app.use(`/notifications`, NotificationsHandler);
@@ -88,6 +88,14 @@ app.use(`/`, IndexHandler);
 
 app.use("/file", Express.static(Path.join(Path.dirname(fileURLToPath(import.meta.url)), 'web')));
 
+app.get('/favicon.ico', (req, res) => {
+	res.sendFile(Path.join(Path.dirname(fileURLToPath(import.meta.url)), 'web', 'favicon.ico'));
+});
+
+app.get('/apple-touch-icon.png', (req, res) => {
+	res.sendFile(Path.join(Path.dirname(fileURLToPath(import.meta.url)), 'web', 'apple-touch-icon.png'));
+});
+
 app.get('/error/:eid', (req, res) => {
 	res.send(Template({
 		title: "错误",
@@ -98,7 +106,7 @@ app.get('/error/:eid', (req, res) => {
 		isReplace: req.isReplace,
 		isAdmin: req.isAdmin,
 		userName: getProfile(req.loginStat).userName
-	}, `<script>function SetText(str){$("#out").text(str+" 秒后将自动返回上一页")}setTimeout(SetText,1000,2);setTimeout(SetText,2000,1);setTimeout(()=>{window.history.back()},3000);</script><div class="mdui-typo">${prof.errids[req.params.eid] ? prof.errids[req.params.eid] : "未定义的错误"}<br><div id="out">3 秒后将自动返回上一页</div></div>`));
+	}, `<script>function SetText(str){$("#out").text(str+" 秒后将自动返回主页")}setTimeout(SetText,1000,2);setTimeout(SetText,2000,1);setTimeout(()=>{location.href=location.origin;},3000);</script><div class="mdui-typo">${prof.errids[req.params.eid] ? prof.errids[req.params.eid] : "未定义的错误"}<br><div id="out">3 秒后将自动返回主页</div></div>`));
 });
 
 app.get('*', (req, res) => {
