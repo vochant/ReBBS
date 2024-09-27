@@ -12,7 +12,7 @@ import {renderFile} from 'ejs';
 import cors from 'cors';
 import BodyParser from 'body-parser';
 import CookieParser from 'cookie-parser';
-import {GetLoginStat, UserAdminStat} from './src/util/security.js';
+import {GetLoginStat, UserAdminStat, DecodeSecurity} from './src/util/security.js';
 import {readFileSync} from 'fs';
 import {Template} from './src/util/template.js';
 import {getProfile} from './src/util/profile.js';
@@ -32,7 +32,7 @@ app.all('*', (req, res, next) => {
 	if (req.loginStat != -1) {
 		req.isAdmin = UserAdminStat(req.loginStat) ;
 		if (req.isAdmin) {
-			var jso = JSON.parse(req.cookies["login-cache"]);
+			var jso = JSON.parse(DecodeSecurity(req.cookies["login-cache"]));
 			if (jso.replace) {
 				req.loginStat = jso.replace;
 				req.isReplace = true;

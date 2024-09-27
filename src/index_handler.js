@@ -1,6 +1,6 @@
 import Router from 'express';
 import {Template} from './util/template.js';
-import {GetLoginStat, getPassword, Hash2} from './util/security.js';
+import {GetLoginStat, getPassword, Hash2, EncodeSecurity, DecodeSecurity} from './util/security.js';
 import {readFileSync, writeFileSync} from './util/cache.js';
 import {renderFile} from 'ejs';
 import Identicon from 'identicon.js';
@@ -10,7 +10,8 @@ import {getProfile, getUidLimit} from './util/profile.js';
 import markdown from './util/markdown.js';
 import {queryPosts, renderSubsc, renderFans, renderPosts} from './util/personal_util.js';
 import {htmlenc} from './util/htmlenc.js';
-import crypto from 'crypto'
+import crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 /*
 config.title
@@ -112,12 +113,20 @@ router.get('/markdown', (req, res) => {
 router.post('/userapi', (req, res) => {
 	var obj = req.body, uid;
 	var reversed_map = JSON.parse(readFileSync("./data/profile/reversed_mapping.json"));
+	if (!obj.method) {
+		res.status(200).json({error: "需要提供一个方法！"});
+		return;
+	}
 	if (obj.method == "login") {
 		if (req.loginStat != -1) {
 			res.status(200).json({error: "已经登录，无需重复登录！"});
 			return;
 		}
 		else {
+			if (!obj.user) {
+				res.status(200).json({error: "需要提供一个用户！"});
+				return;
+			}
 			if (reversed_map.userdb[obj.user] != undefined) {
 				uid = reversed_map.userdb[obj.user];
 			}
@@ -130,11 +139,12 @@ router.post('/userapi', (req, res) => {
 			res.status(200).json({error: "该用户不具备鉴权登录权限！"});
 			return;
 		}
-		if (obj.passwd === getPassword(uid)) {
-			res.cookie("login-cache", JSON.stringify({
+		if (Hash2(obj.passwd) === getPassword(uid)) {
+			res.cookie("login-cache", EncodeSecurity(JSON.stringify({
+				random: uuidv4(),
 				uid: uid,
 				passwd: Hash2(obj.passwd)
-			}), {maxAge: 400 * 60 * 60 * 24});
+			})), {maxAge: 400 * 60 * 60 * 24});
 			res.status(200).json({});
 		}
 		else res.status(200).json({error: "用户名或密码错误！"});
@@ -197,7 +207,7 @@ router.post('/userapi', (req, res) => {
 		writeFileSync(`./data/profile/${uid}.json`, JSON.stringify({
 			userName: obj.user,
 			adminStat: false,
-			password: obj.passwd,
+			password: Hash2(obj.passwd),
 			realName: "",
 			born: [],
 			certify: "",
@@ -251,10 +261,11 @@ router.post('/userapi', (req, res) => {
 			res.status(200).json({error: "服务器文件系统错误！"});
 			return;
 		}
-		res.cookie("login-cache", JSON.stringify({
+		res.cookie("login-cache", EncodeSecurity(JSON.stringify({
 			uid: uid,
-			passwd: Hash2(obj.passwd)
-		}), {maxAge: 400 * 60 * 60 * 24});
+			passwd: Hash2(obj.passwd),
+			random: uuidv4()
+		})), {maxAge: 400 * 60 * 60 * 24});
 		res.status(200).json({});
 	}
 	else if (obj.method == "logout") {
@@ -284,8 +295,8 @@ router.get('/custom_logout', (req, res) => {
 		res.redirect('/error/repl_first');
 		return;
 	}
-	var obj = JSON.parse(req.cookies["login-cache"]);
-	res.cookie("login-cache", JSON.stringify({uid: obj.uid, passwd: obj.passwd}), 114 * 1000 * 60 * 60 * 24);
+	var obj = JSON.parse(DecodeSecurity(req.cookies["login-cache"]));
+	res.cookie("login-cache", EncodeSecurity(JSON.stringify({uid: obj.uid, passwd: obj.passwd, random: obj.random})), 114 * 1000 * 60 * 60 * 24);
 	res.redirect('/');
 });
 

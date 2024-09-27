@@ -47,3 +47,7 @@ node index.js
 ```
 
 待命令行出现文本 `Port :xxx is opened`，访问对应端口即可。通常使用 `80` 端口，访问 `localhost` 即可。如有需要，也可以打开 `data/profile.json`，更改端口为其他值，如 `443`（HTTPS 的默认端口） 或 `8080`（常用于调试）。
+
+## 安全性
+
+本系统使用 AES 算法加密用户的登录信息，默认密钥是 `0123456789abcdeffedcba9876543210`，位于 `data/profile.json`。强烈建议您把它换成其他密钥。

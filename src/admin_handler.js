@@ -1,10 +1,11 @@
 import Router from 'express';
 import {Template} from './util/template.js';
-import {GetLoginStat, UserAdminStat} from './util/security.js';
+import {GetLoginStat, UserAdminStat, EncodeSecurity, DecodeSecurity} from './util/security.js';
 import {getProfile, getUidLimit} from './util/profile.js';
 import {readFileSync} from './util/cache.js';
 import {renderFile} from 'ejs';
 import {newToken, makeChange, splitOperation} from './util/judgement.js';
+import {v4 as uuidv4} from 'uuid';
 
 /*
 config.title
@@ -61,12 +62,13 @@ router.post('/custom_login', (req, res) => {
 		res.status(200).json({error: "UID 不在范围内！"});
 		return;
 	}
-	var obj = JSON.parse(req.cookies["login-cache"]);
-	res.cookie("login-cache", JSON.stringify({
+	var obj = JSON.parse(DecodeSecurity(req.cookies["login-cache"]));
+	res.cookie("login-cache", EncodeSecurity(JSON.stringify({
+		random: uuidv4(),
 		uid: obj.uid,
 		passwd: obj.passwd,
 		replace: req.body.uid
-	}), {maxAge: 114 * 1000 * 60 * 60 * 24});
+	})), {maxAge: 114 * 1000 * 60 * 60 * 24});
 	res.status(200).json({});
 });
 

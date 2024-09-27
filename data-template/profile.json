@@ -9,5 +9,6 @@
 		"deleted": "该文章已被删除",
 		"user_not_found": "用户不存在",
 		"not_found": "文章不存在"
-	}
+	},
+	"password": "0123456789abcdeffedcba9876543210"
 }

@@ -33,6 +33,10 @@ router.get('/private/:uid', (req, res) => {
 		res.redirect('/message/?error=invalid');
 		return;
 	}
+	if (getProfile(req.loginStat).relationship.banned.includes(uid) || getProfile(uid).relationship.banned.includes(req.loginStat)) {
+		res.redirect('/message/?error=banned');
+		return;
+	}
 	if (uid == req.loginStat) {
 		res.redirect('/message/?error=self');
 		return;
@@ -41,7 +45,7 @@ router.get('/private/:uid', (req, res) => {
 });
 
 function Load(req, res, th) {
-	
+	console.log('[DEBUG] Relationship: ', th, getProfile(req.loginStat).relationship.groups);
 	if (th != -1 && !getProfile(req.loginStat).relationship.groups.includes(th)) {
 		res.redirect('/message/?error=invalidth');
 		return;
@@ -62,6 +66,24 @@ function Load(req, res, th) {
 		}, hypertext));
 	});
 }
+
+router.post('/api', (req, res) => {
+	var obj = req.body;
+	if (!obj.method) {
+		res.status(200).send({error: '需要提供一个方法'});
+		return;
+	}
+	if (obj.method == 'new') {
+		if (!obj.data) {
+			res.status(200).send({error: '需要一个成员列表'});
+			return;
+		}
+		if (!(obj.data instanceof Array)) {
+			res.status(200).send({error: '成员列表必须是一个 Array 对象'});
+		}
+		
+	}
+})
 
 router.get('/:thread', (req, res) => {
 	if (!/[1-9][0-9]*/.test(req.params.thread)) {

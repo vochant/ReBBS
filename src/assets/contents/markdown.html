@@ -19,7 +19,7 @@
 		<li>markdown-it-media (改自 HydroOJ) - 媒体等的支持</li>
 	</ul>
 	<p>注意：全部渲染插件均安装在服务端。Markdown 编辑器使用洛谷团队的 Markdown*Palettes，渲染结果可能和本网站不一致。</p>
-	<p>OICM 使用 KaTeX 作为 LaTeX 渲染引擎，注意需要四个而不是两个反斜杠实现换行。</p>
+	<p>OICM 使用 KaTeX 作为 LaTeX 渲染引擎</p>
 	<h3 class="article-title">常用扩展语法</h3>
 	<code>==Text==</code><mark>Text</mark><br>
 	<code>!!Text!!</code><span  class="spoiler">Text</span><br>
@@ -31,4 +31,5 @@
 	<code>@[youtube](watch-id)</code> YouTube 视频 (如果看不到就是网络问题，本站只提供解析，决不会提供翻墙服务)<br>
 	<code>@[user](uid)</code> 提及用户
 	<p>另外，markdown-it-media 也支持 vimeo、vine、prezi 平台的引用，虽然通常不会用到。关于如何使用 markdown-it-imsize 和 markdown-it-footnote 请自行查阅。markdown-it-merge-cells 会合并列表中相邻的相同元素。</p>
+	<p>为什么我的 LaTeX 不起作用？请按照 KaTeX 的规范。如<code>$ x^2+y^2=z^2 $</code>不能正常渲染，而<code>$x^2+y^2=z^2$</code>可以正常渲染。</p>
 </div>

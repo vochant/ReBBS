@@ -33,7 +33,7 @@ router.all('*', (req, res, next) => {
 
 router.post('/security_api', (req, res) => {
 	var obj = req.body, pf = getProfile(req.loginStat);
-	if (obj.password !== getPassword(req.loginStat)) {
+	if (Hash2(obj.password) !== getPassword(req.loginStat)) {
 		res.status(200).json({error: "密码不匹配！"});
 		return;
 	}
@@ -69,7 +69,7 @@ router.post('/security_api', (req, res) => {
 			res.status(200).json({error: "密码必须仅由大小写字母、数字和部分特殊符号组成，且至少为6位！"});
 			return;
 		}
-		if (setProfile(req.loginStat, "password", obj.value)) {
+		if (setProfile(req.loginStat, "password", Hash2(obj.value))) {
 			res.status(200).json({error: "服务器文件系统错误！"});
 			return;
 		}

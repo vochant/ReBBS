@@ -16,10 +16,11 @@ export const Bind = function(server) {
 	io.on('connection', (socket) => {
 		if (!socket.handshake.headers.cookie) {
 			sendMsg(socket, 'eh', 'no_cookie');
+			return;
 		}
 		const cookies = cookie.parse(socket.handshake.headers.cookie);
 		const loginStat = GetLoginStat({cookies});
-		// console.log(`UID ${loginStat} connected to the server.`)
+		console.log(`[DEBUG] UID ${loginStat} connected to the server.`)
 		if (!loginStat || loginStat == -1) {
 			sendMsg(socket, 'eh', 'login_first');
 			return;
@@ -34,7 +35,7 @@ export const Bind = function(server) {
 		}
 
 		socket.on('disconnect', function() {
-			// console.log(`UID ${loginStat} disconnected from the server.`)
+			console.log(`[DEBUG] UID ${loginStat} disconnected from the server.`)
 			rmap['u' + loginStat] = undefined;
 			view['u' + loginStat] = undefined;
 		});
@@ -76,8 +77,10 @@ export const Bind = function(server) {
 						{
 							icon: `/file/usericon/${uid}.png`,
 							name: getProfile(uid).userName,
-							last: '',
-							unread: false
+							last: '暂无消息',
+							unread: false,
+							id: uid,
+							count: 0
 						}
 					]
 				});
