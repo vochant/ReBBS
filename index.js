@@ -68,11 +68,12 @@ import OptionHandler from './src/settings_handler.js';
 import UserHandler from './src/user_handler.js';
 import ArticleHandler from './src/article_handler.js';
 import {Bind} from './src/ws_handler.js';
+import DriveHandler from './src/drive_handler.js';
 import MessageHandler from './src/talk_handler.js';
 
 app.use(`/admin`, AdminHandler);
 app.use(`/userapi`, UserHandler);
-// app.use(`/drive`, DriveHandler);
+app.use(`/drive`, DriveHandler);
 app.use(`/article`, ArticleHandler);
 app.use(`/message`, MessageHandler);
 // app.use(`/notifications`, NotificationsHandler);

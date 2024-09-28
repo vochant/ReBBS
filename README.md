@@ -30,7 +30,7 @@ ReBBS 是一款 BBS (电子公告栏系统)，使用 Node.js 技术开发，适�
 npm install
 ```
 
-然后复制 `data-template` 目录，取名为 `data`，再在 `web` 目录下创建 `usericon` 目录。若要使用命令行操作，在不同环境下表述不一定相同。
+然后复制 `data-template` 目录，取名为 `data`。
 
 ## 运行
 

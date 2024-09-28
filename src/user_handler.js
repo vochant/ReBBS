@@ -41,6 +41,10 @@ router.post("/iconset", (req, res) => {
 		res.status(200).send({error: "用户未登录！"});
 		return;
 	}
+	if (!req.body || !req.body.image) {
+		res.status(200).send({error: "没有上传图片！"});
+		return;
+	}
 	var imgData = req.body.image;
     var base64Data = imgData.replace(/^data:image\/\w+;base64,/, "");
     var dataBuffer = Buffer.from(base64Data, 'base64');

@@ -1,4 +1,5 @@
 import { v4 as uuid } from "uuid"
+import { getProfile, getUidLimit } from "./profile.js"
 
 const allowFullScreen =
   " webkitallowfullscreen mozallowfullscreen allowfullscreen"
@@ -137,6 +138,16 @@ export function Media(md) {
           Your browser doesn't support video tag.
         </video>`
     }
+	if (service === "user") {
+		if (!/^[1-9][0-9]*$/.test(src)) {
+			return ' <a class="no-typo mdui-chip"><img class="mdui-chip-icon" src="/file/default_icon.png"/><span class="mdui-chip-title">Error</span></a> ';
+		}
+		let a = Number(src);
+		if (a > getUidLimit()) {
+			return ' <a class="no-typo mdui-chip"><img class="mdui-chip-icon" src="/file/default_icon.png"/><span class="mdui-chip-title">Error</span></a> ';
+		}
+		return `<a href="/user/${a}" class="no-typo mdui-chip"><img class="mdui-chip-icon" src="/file/usericon/${a}.png"/><span class="mdui-chip-title">${getProfile(a).userName}</span></a>`
+	}
     if (options[service]?.width) {
       return `<div class="embed-responsive embed-responsive-16by9">
       <iframe class="embed-responsive-item ${service}-player" type="text/html" width="${options[
@@ -182,7 +193,7 @@ export function Media(md) {
       token.attrPush(["url", match[2]])
       token.level = theState.level
     }
-    theState.pos += theState.src.indexOf(")", theState.pos)
+    theState.pos = theState.src.indexOf(")", theState.pos) + 1
     return true
   })
 }

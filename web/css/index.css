@@ -51,3 +51,15 @@ footer {
 .spoiler:hover, .spoiler:focus {
 	color: #fff !important;
 }
+
+.no-typo {
+	color: #000!important;
+}
+
+.no-typo::before {
+	display: none;
+}
+
+.no-typo::after {
+	display: none;
+}

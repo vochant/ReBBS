@@ -18,7 +18,7 @@ export const queryPosts = (uid, begin, inhp) => {
 			tags += `
 <div class="mdui-chip">
 	<a href="/article/tags/${iprof.posts[base - i].tags[j].id}" class="mdui-chip-title blog-tag">
-		${iprof.posts[base - i].tags[j].title}
+		${htmlenc(iprof.posts[base - i].tags[j].title)}
 	</a>
 </div> `;
 		}
@@ -28,7 +28,7 @@ export const queryPosts = (uid, begin, inhp) => {
 		<div class="mdui-card-primary">
 			<div class="mdui-row">
 				<a class="blog-title mdui-card-primary-title" href="/article/${iprof.posts[base - i].id}">
-					${iprof.posts[base - i].title}
+					${htmlenc(iprof.posts[base - i].title)}
 				</a><br>
 				<div>
 					${tags}

@@ -1,3 +1,4 @@
+<script src="/file/js/jquery.form.min.js"></script>
 <script>
 	$(document).ready(() => {
 		window.socket = io(`${window.origin}`, {
@@ -87,6 +88,14 @@
 					text: msg
 				}));
 			}
+			obj.sendSpecial = function(msg, special) {
+				if (obj.active == -1) return;
+				socket.emit('send', JSON.stringify({
+					thread: layoutManager.active,
+					text: msg,
+					special: special
+				}));
+			}
 			obj.view = function() {
 				if (obj.active == -1) return;
 				socket.emit('view', JSON.stringify({
@@ -100,15 +109,19 @@
 			obj.me = <%= user %>;
 			obj.active = <%= loadThread %>;
 			obj.Load = false;
-			obj.selfSend = function(time, sender, icon, content, up = false) {
+			obj.selfSend = function(time, sender, icon, content, uid, up = false) {
 				let elem = document.createElement('div');
 				elem.setAttribute('style', 'clear:both;text-align:right;');
+				let link = document.createElement('a');
+				link.setAttribute('class', 'no-typo');
+				link.href = `/user/${uid}`;
 				let img = document.createElement('img');
 				img.src = icon;
 				img.title = sender;
 				img.setAttribute('class', 'mdui-img mdui-img-circle');
 				img.setAttribute('style', 'float:right;width:45px;height:45px;margin:5px;');
-				elem.appendChild(img);
+				link.appendChild(img);
+				elem.appendChild(link);
 				let d = document.createElement('div');
 				d.setAttribute('style', 'float:right;max-width:70%;');
 				let text = document.createElement('a');
@@ -132,15 +145,19 @@
 					}
 				}
 			}
-			obj.anoSend = function(time, sender, icon, content, up = false) {
+			obj.anoSend = function(time, sender, icon, content, uid, up = false) {
 				let elem = document.createElement('div');
 				elem.setAttribute('style', 'clear:both;text-align:left;');
+				let link = document.createElement('a');
+				link.setAttribute('class', 'no-typo');
+				link.href = `/user/${uid}`;
 				let img = document.createElement('img');
 				img.src = icon;
 				img.title = sender;
 				img.setAttribute('class', 'mdui-img mdui-img-circle');
 				img.setAttribute('style', 'float:left;width:45px;height:45px;margin:5px;');
-				elem.appendChild(img);
+				link.appendChild(img);
+				elem.appendChild(link);
 				let d = document.createElement('div');
 				d.setAttribute('style', 'float:left;max-width:70%;');
 				let text = document.createElement('a');
@@ -169,7 +186,7 @@
 				elem.setAttribute('style', 'clear:both;text-align:center;');
 				let a = document.createElement('b');
 				elem.setAttribute('class', 'mdui-text-color-black-secondary');
-				a.innerText = content;
+				a.innerHTML = content;
 				elem.appendChild(a);
 				elem.appendChild(document.createElement('br'));
 				if (up) {
@@ -192,10 +209,10 @@
 					obj.notify(o.content, up);
 				}
 				else if (o.sender == obj.me) {
-					obj.selfSend(o.time, o.name, '/file/usericon/' + obj.me + '.png', o.content, up);
+					obj.selfSend(o.time, o.name, '/file/usericon/' + obj.me + '.png', o.content, o.sender, up);
 				}
 				else {
-					obj.anoSend(o.time, o.name, '/file/usericon/' + o.sender + '.png', o.content, up);
+					obj.anoSend(o.time, o.name, '/file/usericon/' + o.sender + '.png', o.content, o.sender, up);
 				}
 			}
 			obj.sends = function(pack) {
@@ -268,6 +285,36 @@
 			if ($("#msg-outer").scrollTop() <= 25 && layoutManager.active != -1) serverIO.tryfetchmore();
 		});
 		socket.emit('init', '<%= loadThread %>');
+		window.upload_window = new mdui.Dialog('#sendfile');
+		$("#upimage").click(() => {
+			$("#upload-text").text('上传图片');
+			$("#file").get(0).setAttribute('accept', 'image/*');
+			window.upload_window.open();
+			window.upload_mode = 'image';
+		});
+		$("#upfile").click(() => {
+			$("#upload-text").text('上传文件');
+			$("#file").get(0).setAttribute('accept', '*/*');
+			window.upload_window.open();
+			window.upload_mode = 'file';
+		});
+		$("#sendform").bind("select", () => {
+			let file = $("#file").val();
+			if (file == "") {
+				alert("请选择文件");
+				return false;
+			}
+			mdui.snackbar('开始上传');
+		});
+		$("#sendform").ajaxForm((data) => {
+			if (data.error) {
+				alert(data.error);
+				return;
+			}
+			mdui.snackbar('正在发送');
+			window.serverIO.sendSpecial(data.id, window.upload_mode);
+			window.upload_window.close();
+		});
 	});
 </script>
 <link rel="stylesheet" href="/file/markdown-palettes.css">
@@ -284,7 +331,13 @@
 		<div id="text"></div>
 	</div>
 </div>
-<div id="control" style="height:100%;float:left;width:15%;" class="mdui-shadow-2"></div>
+<div id="control" style="height:100%;float:left;width:15%;" class="mdui-shadow-2">
+	<div style="padding:20px;text-align:center">
+		<div id="group-panel"></div>
+		<a class="mdui-btn mdui-btn-raised mdui-color-theme-accent" id="upfile">上传文件</a><br><br>
+		<a class="mdui-btn mdui-btn-raised mdui-color-theme-accent" id="upimage">上传图片</a>
+	</div>
+</div>
 <style>
 	.unread {
 		color: #ff0000!important;
@@ -326,3 +379,15 @@
 	}
 </style>
 <a class="mdui-fab mdui-fab-fixed mdui-color-theme-accent" id="send"><i class="mdui-icon material-icons">send</i></a>
+<div class="mdui-dialog" id="sendfile">
+	<div style="padding:50px;">
+		<div class="mdui-typo">
+			<h1 id="upload-text"></h1><br><br>
+		</div>
+		<form action="/drive/upload" method="POST" enctype="multipart/form-data" id="sendform">
+			<label for="file">选择文件</label>
+			<input type="file" name="file" id="file"><br><br><br>
+			<input type="submit" class="mdui-btn mdui-btn-raised mdui-color-theme-accent mdui-ripple mdui-ripple-white" value="上传">
+		</form>
+	</div>
+</div>
