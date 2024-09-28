@@ -22,9 +22,9 @@ var prof = JSON.parse(readFileSync('./data/profile.json'));
 
 const app = Express();
 app.use(cors());
-app.use(BodyParser.json());
+app.use(BodyParser.json({limit:'32mb'}));
 app.use(CookieParser());
-app.use(BodyParser.urlencoded({extended: false}));
+app.use(BodyParser.urlencoded({extended: true, limit:'32mb'}));
 
 app.all('*', (req, res, next) => {
 	req.isReplace = false;
